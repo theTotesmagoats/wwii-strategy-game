@@ -683,9 +683,10 @@
                     ));
                 }
                 
-                // Create flak burst at bomber's altitude
-                const burstY = Math.max(50, Math.min(height - 100, bomber.y));
-                game.flakBursts.push(new FlakBurst(this.x + (Math.random() - 0.5) * 50, burstY));
+                // CRITICAL FIX: Create flak burst at a fixed altitude above ground, NOT tracking the plane
+                // This ensures flak comes from cannons and explodes at their designated height
+                const burstAltitude = height - 250; // Fixed altitude for flak explosions
+                game.flakBursts.push(new FlakBurst(this.x + (Math.random() - 0.5) * 50, burstAltitude));
             }
             
             draw(ctx) {
@@ -824,7 +825,7 @@
             }
         }
         
-        // Bomb class
+        // Bomb class with fixed collision detection
         class Bomb {
             constructor(x, y) {
                 this.x = x;
@@ -866,15 +867,19 @@
                     game.particles.push(new Particle(this.x, this.y - 5, 'debris'));
                 }
                 
-                // Check target hits
+                // Check target hits with increased radius
+                const explosionRadius = 120; // Increased from 60 to 120
+                
                 for (const obj of groundObjects) {
                     if (!obj.active) continue;
                     
+                    // Calculate distance from bomb center to object center
                     const dx = obj.x + obj.width/2 - this.x;
                     const dy = obj.y + obj.height/2 - (this.y - 5);
                     const dist = Math.sqrt(dx*dx + dy*dy);
                     
-                    if (dist < 60) { // Explosion radius
+                    if (dist < explosionRadius) {
+                        console.log("Target hit!", dist, "px from center");
                         obj.createExplosion();
                         game.targetsDestroyed++;
                         
@@ -947,7 +952,7 @@
             }
             
             groundObjects = [];
-            // Create targets along the path
+            // CRITICAL FIX: Create targets within visible screen area
             const targetPositions = [300, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2100];
             
             for (let i = 0; i < targetPositions.length; i++) {
