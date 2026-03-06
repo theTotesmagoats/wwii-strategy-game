@@ -3,1017 +3,975 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>General's Command: WWII Strategy Simulator</title>
+    <title>Normandy Sky: Bomber Command</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #2a2a2a;
-            color: #33ff33;
+            overflow: hidden;
+            background-color: #87CEEB;
             font-family: 'Courier New', monospace;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
+        }
+        
+        #gameCanvas {
+            display: block;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+        
+        .ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+        
+        .hud-panel {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .hud-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .hud-label {
+            width: 80px;
+            font-weight: bold;
+            color: #33ff33;
+        }
+        
+        .hud-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .center-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 100;
         }
         
         h1 {
-            margin: 20px 0;
-            text-shadow: 0 0 5px #33ff33;
-            font-size: 2.5em;
-            text-align: center;
+            color: white;
+            font-size: 48px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
         }
         
-        .game-container {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            width: 100%;
-        }
-        
-        #canvas-container {
-            position: relative;
-            border: 3px solid #33ff33;
-            box-shadow: 0 0 15px rgba(51, 255, 51, 0.4);
-        }
-        
-        canvas {
-            display: block;
-            background-color: #1a1a1a;
-        }
-        
-        .ui-panel {
-            width: 300px;
-            background-color: #333;
-            border: 2px solid #33ff33;
-            padding: 15px;
-            box-shadow: 0 0 10px rgba(51, 255, 51, 0.3);
-        }
-        
-        .panel-section {
-            margin-bottom: 15px;
-            border-bottom: 1px dashed #33ff33;
-            padding-bottom: 10px;
-        }
-        
-        .panel-section:last-child {
-            border-bottom: none;
-        }
-        
-        h2 {
-            color: #33ff33;
-            margin-top: 0;
-            font-size: 1.4em;
-            text-transform: uppercase;
-        }
-        
-        .resource-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding: 5px 10px;
-            background-color: #4a4a4a;
-            border-radius: 3px;
-        }
-        
-        .resource-value {
-            color: #fff;
-            font-weight: bold;
-        }
-        
-        .resource-amount {
-            color: #ffcc00;
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); text-shadow: 3px 3px 6px rgba(0,0,0,0.5); }
+            50% { transform: scale(1.05); text-shadow: 4px 4px 8px rgba(0,0,0,0.7); }
         }
         
         button {
-            background-color: #2a6e2a;
-            color: #33ff33;
-            border: 2px solid #33ff33;
-            padding: 8px 12px;
-            margin: 4px 0;
-            width: 100%;
+            background: linear-gradient(to bottom, #33ff33, #2a992a);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 24px;
             font-family: 'Courier New', monospace;
-            font-size: 1em;
+            font-weight: bold;
             cursor: pointer;
-            border-radius: 3px;
-            transition: background-color 0.2s, box-shadow 0.2s;
+            border-radius: 8px;
+            box-shadow: 0 6px rgba(0,100,0,0.3);
+            transition: all 0.1s;
+            margin-top: 20px;
         }
         
         button:hover {
-            background-color: #3a8e3a;
-            box-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px rgba(0,100,0,0.4);
         }
         
         button:active {
-            transform: scale(0.98);
+            transform: translateY(2px);
+            box-shadow: 0 2px rgba(0,100,0,0.3);
         }
         
-        .unit-card {
-            background-color: #4a4a4a;
-            border: 1px solid #5a5a5a;
-            padding: 8px;
-            margin-bottom: 8px;
-            border-radius: 3px;
+        .tutorial-text {
+            color: white;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-top: 20px;
+            max-width: 600px;
+            line-height: 1.5;
         }
         
-        .unit-name {
-            font-weight: bold;
-            color: #33ff33;
-            margin-bottom: 4px;
+        .mission-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ffcc00;
         }
         
-        .unit-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4px;
-            font-size: 0.85em;
+        .mission-counter h3 {
+            color: #ffcc00;
+            margin: 0 0 10px 0;
         }
         
-        .stat-label {
-            color: #aaa;
+        .progress-bar {
+            width: 200px;
+            height: 20px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            overflow: hidden;
         }
         
-        .stat-value {
-            color: #fff;
-        }
-        
-        .log-container {
-            height: 200px;
-            overflow-y: auto;
-            background-color: #1a1a1a;
-            border: 1px solid #33ff33;
-            padding: 8px;
-            font-size: 0.85em;
-        }
-        
-        .log-entry {
-            margin-bottom: 4px;
-            padding-left: 8px;
-            border-left: 2px solid #33ff33;
-        }
-        
-        .log-entry.danger { color: #ff6666; }
-        .log-entry.success { color: #66ff66; }
-        .log-entry.info { color: #ffff66; }
-        
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-        
-        .sound-toggle {
-            background-color: #4a4a4a !important;
-            font-size: 0.9em;
-        }
-        
-        /* Subtle animations */
-        .subtle-shake {
-            animation: subtleShake 0.2s ease-in-out;
-        }
-        
-        @keyframes subtleShake {
-            0%, 100% { transform: translateX(0); }
-            50% { transform: translateX(-3px); }
-        }
-        
-        .flash-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
+        .progress-fill {
             height: 100%;
-            pointer-events: none;
-            z-index: 999;
-            animation: flashFade 0.2s ease-out;
-        }
-        
-        @keyframes flashFade {
-            0% { background-color: rgba(51, 255, 51, 0.3); opacity: 1; }
-            100% { opacity: 0; }
+            width: 0%;
+            background: linear-gradient(to right, #ffcc00, #ff6600);
+            transition: width 0.3s;
         }
     </style>
 </head>
 <body>
-    <h1>GENERAL'S COMMAND</h1>
+    <canvas id="gameCanvas"></canvas>
     
-    <div class="game-container">
-        <div id="canvas-container">
-            <canvas id="gameCanvas" width="800" height="640"></canvas>
+    <div class="ui-overlay">
+        <div class="hud-panel">
+            <div class="hud-item">
+                <span class="hud-label">TARGETS:</span>
+                <span class="hud-value" id="targetsValue">0/10</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">HP:</span>
+                <span class="hud-value" id="hpValue">100%</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">FUEL:</span>
+                <span class="hud-value" id="fuelValue">100%</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mission-counter">
+        <h3>MISSION PROGRESS</h3>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+    
+    <div id="startScreen" class="center-screen">
+        <h1>NORMANDY SKY</h1>
+        <p style="color: white; font-size: 24px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">BOMBER COMMAND</p>
+        
+        <div class="tutorial-text">
+            <strong>MISSION:</strong> Bomb enemy targets in Normandy<br><br>
+            <strong>CONTROLS:</strong> Move mouse to steer • Click to drop bombs<br>
+            <strong>AVOID:</strong> Flak cannons and enemy fighters!
         </div>
         
-        <div class="ui-panel">
-            <div class="panel-section">
-                <h2>COMMANDER'S RESOURCES</h2>
-                <div class="resource-item">
-                    <span>FUEL:</span>
-                    <span id="fuelDisplay" class="resource-amount">500</span>
-                </div>
-                <div class="resource-item">
-                    <span>AMMO:</span>
-                    <span id="ammoDisplay" class="resource-amount">800</span>
-                </div>
-                <div class="resource-item">
-                    <span>INTELLIGENCE:</span>
-                    <span id="intelDisplay" class="resource-amount">3</span>
-                </div>
-                <div class="resource-item">
-                    <span>CIVILIAN TRUST:</span>
-                    <span id="civilianDisplay" class="resource-amount">100%</span>
-                </div>
-            </div>
-            
-            <div class="panel-section">
-                <h2>ACTIVE UNITS</h2>
-                <div id="unitsContainer"></div>
-            </div>
-            
-            <div class="panel-section">
-                <h2>TACTICAL COMMANDS</h2>
-                <button class="sound-toggle" onclick="game.toggleSound()">🔊 SOUND: ON</button>
-                <div class="controls">
-                    <button onclick="game.recon()">Recon Plane (3)</button>
-                    <button onclick="game.advance()">Advance All Units</button>
-                    <button onclick="game.defend()">Defensive Stance</button>
-                    <button onclick="game.airstrike()">Airstrike (50 fuel)</button>
-                </div>
-            </div>
-            
-            <div class="panel-section">
-                <h2>MISSION LOG</h2>
-                <div id="logContainer" class="log-container"></div>
-            </div>
-        </div>
+        <button id="startButton">START MISSION</button>
+    </div>
+    
+    <div id="gameOverScreen" class="center-screen" style="display: none;">
+        <h1 id="gameOverTitle">MISSION ACCOMPLISHED!</h1>
+        <p class="tutorial-text" id="gameOverMessage">
+            Enemy targets neutralized. Good flying, pilot!
+        </p>
+        <button onclick="location.reload()">FLY AGAIN</button>
     </div>
 
     <script>
         // Game configuration
-        const CONFIG = {
-            tileSize: 64,
-            cols: 10,
-            rows: 8,
-            colors: {
-                grass: '#2d6e32',
-                forest: '#1a4a20',
-                town: '#b94e48',
-                road: '#5c4033'
-            }
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+        
+        // Game state
+        const game = {
+            running: false,
+            targetsDestroyed: 0,
+            totalTargets: 10,
+            hp: 100,
+            fuel: 100,
+            mouseX: width / 2,
+            mouseY: height / 2,
+            time: 0
         };
-
-        // Simple sound system with optional audio
+        
+        // Sound system (Web Audio API)
         class SoundSystem {
             constructor() {
                 this.enabled = true;
                 try {
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.masterGain = this.audioContext.createGain();
+                    this.masterGain.gain.value = 0.3;
+                    this.masterGain.connect(this.audioContext.destination);
                 } catch (e) {
                     console.log("Web Audio API not supported");
                     this.enabled = false;
                 }
             }
-
-            playTone(freq, type = 'sine', duration = 0.15) {
+            
+            playTone(freq, type, duration, startTime = 0) {
                 if (!this.enabled || !this.audioContext) return;
                 
                 const oscillator = this.audioContext.createOscillator();
                 const gainNode = this.audioContext.createGain();
                 
                 oscillator.type = type;
-                oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime + startTime);
                 
-                gainNode.gain.setValueAtTime(0.15, this.audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+                gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime + startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + startTime + duration);
                 
                 oscillator.connect(gainNode);
-                gainNode.connect(this.audioContext.destination);
+                gainNode.connect(this.masterGain);
                 
-                oscillator.start();
-                oscillator.stop(this.audioContext.currentTime + duration);
-            }
-
-            playExplosion() {
-                if (!this.enabled || !this.audioContext) return;
-                // Gentle explosion - low frequency sine wave
-                this.playTone(100, 'sine', 0.3);
-            }
-
-            playRadio() {
-                if (!this.enabled || !this.audioContext) return;
-                // Soft beep for radio chatter
-                this.playTone(600, 'triangle', 0.1);
-            }
-
-            playSelect() {
-                if (!this.enabled || !this.audioContext) return;
-                // Pleasant chime
-                this.playTone(400, 'sine', 0.2);
+                oscillator.start(this.audioContext.currentTime + startTime);
+                oscillator.stop(this.audioContext.currentTime + startTime + duration);
             }
             
-            toggle() {
-                this.enabled = !this.enabled;
-                return this.enabled;
+            playBombDrop() {
+                if (!this.enabled || !this.audioContext) return;
+                // Whoosh sound
+                for (let i = 0; i < 3; i++) {
+                    this.playTone(200 - i * 50, 'sine', 0.3, i * 0.1);
+                }
+            }
+            
+            playExplosion() {
+                if (!this.enabled || !this.audioContext) return;
+                // Low frequency explosion
+                const startTime = this.audioContext.currentTime;
+                
+                // Main boom
+                const oscillator1 = this.audioContext.createOscillator();
+                const gain1 = this.audioContext.createGain();
+                oscillator1.type = 'sawtooth';
+                oscillator1.frequency.setValueAtTime(100, startTime);
+                oscillator1.frequency.exponentialRampToValueAtTime(20, startTime + 0.5);
+                
+                gain1.gain.setValueAtTime(0.4, startTime);
+                gain1.gain.exponentialRampToValueAtTime(0.01, startTime + 0.8);
+                
+                oscillator1.connect(gain1);
+                gain1.connect(this.masterGain);
+                oscillator1.start(startTime);
+                oscillator1.stop(startTime + 0.8);
+            }
+            
+            playFlak() {
+                if (!this.enabled || !this.audioContext) return;
+                // Crackling sound
+                const startTime = this.audioContext.currentTime;
+                
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const osc = this.audioContext.createOscillator();
+                        const gain = this.audioContext.createGain();
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(800 + Math.random() * 400, startTime);
+                        
+                        gain.gain.setValueAtTime(0.1, startTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
+                        
+                        osc.connect(gain);
+                        gain.connect(this.masterGain);
+                        osc.start(startTime);
+                        osc.stop(startTime + 0.15);
+                    }, i * 30);
+                }
+            }
+            
+            playEngine() {
+                if (!this.enabled || !this.audioContext) return;
+                // Continuous engine hum
+                const startTime = this.audioContext.currentTime;
+                
+                for (let i = 0; i < 4; i++) {
+                    this.playTone(150 + i * 20, 'triangle', 0.5, i * 0.1);
+                }
+            }
+            
+            playMissionComplete() {
+                if (!this.enabled || !this.audioContext) return;
+                // Victory fanfare
+                const startTime = this.audioContext.currentTime;
+                
+                for (let note of [440, 554, 659, 880]) { // A major chord
+                    setTimeout(() => {
+                        this.playTone(note, 'sine', 1.0, 0);
+                    }, (note - 440) / 220 * 300);
+                }
             }
         }
-
-        // Particle system for subtle effects
+        
+        const sound = new SoundSystem();
+        
+        // Particle system
         class Particle {
-            constructor(x, y, color) {
+            constructor(x, y, type, color) {
                 this.x = x;
                 this.y = y;
-                this.color = color;
-                this.size = Math.random() * 3 + 1;
-                this.speedX = (Math.random() - 0.5) * 4;
-                this.speedY = (Math.random() - 0.5) * 4;
-                this.life = 20;
-                this.maxLife = 20;
+                this.type = type; // 'fire', 'smoke', 'debris', 'tracer'
+                this.life = 60;
+                this.maxLife = 60;
+                
+                if (type === 'fire') {
+                    this.size = Math.random() * 15 + 5;
+                    this.speedX = (Math.random() - 0.5) * 8;
+                    this.speedY = (Math.random() - 0.5) * 8 - 2;
+                    this.color = color || `hsl(${30 + Math.random() * 40}, ${100}%, ${60 + Math.random() * 30}%)`;
+                } else if (type === 'smoke') {
+                    this.size = Math.random() * 20 + 10;
+                    this.speedX = (Math.random() - 0.5) * 4;
+                    this.speedY = -1;
+                    this.color = `rgba(80, 80, 80, ${Math.random() * 0.5})`;
+                } else if (type === 'debris') {
+                    this.size = Math.random() * 5 + 2;
+                    this.speedX = (Math.random() - 0.5) * 15;
+                    this.speedY = (Math.random() - 0.5) * 15;
+                    this.color = color || '#8B4513';
+                } else if (type === 'tracer') {
+                    this.size = 2;
+                    this.speedX = (Math.random() - 0.5) * 2;
+                    this.speedY = Math.random() * 2 + 2;
+                    this.color = color || '#ff6600';
+                } else if (type === 'water') {
+                    this.size = Math.random() * 10 + 5;
+                    this.speedX = (Math.random() - 0.5) * 4;
+                    this.speedY = -2;
+                    this.color = `rgba(30, 144, 255, ${Math.random() * 0.6})`;
+                }
+                
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.2;
             }
-
+            
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
                 this.life--;
-                this.size *= 0.9;
+                this.rotation += this.rotationSpeed;
+                
+                if (this.type === 'fire') {
+                    this.size *= 0.95;
+                    this.speedY -= 0.1; // rise up
+                } else if (this.type === 'smoke') {
+                    this.size *= 1.02;
+                    this.speedX += (Math.random() - 0.5) * 0.5;
+                } else if (this.type === 'debris') {
+                    this.speedY += 0.3; // gravity
+                    this.speedX *= 0.98; // friction
+                } else if (this.type === 'tracer') {
+                    this.size *= 0.9;
+                }
             }
-
+            
             draw(ctx) {
-                ctx.fillStyle = this.color;
-                ctx.globalAlpha = Math.min(1, this.life / this.maxLife);
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                
+                if (this.type === 'smoke') {
+                    ctx.fillStyle = `rgba(80, 80, 80, ${Math.min(1, this.life / 30)})`;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = Math.min(1, this.life / 20);
+                    
+                    if (this.type === 'tracer') {
+                        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size * 3);
+                    } else if (this.type === 'debris') {
+                        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                    } else {
+                        // Fire
+                        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+                        if (this.type === 'fire') {
+                            gradient.addColorStop(0, '#ffff00');
+                            gradient.addColorStop(0.5, '#ff6600');
+                            gradient.addColorStop(1, '#cc3300');
+                        } else if (this.type === 'water') {
+                            gradient.addColorStop(0, '#87CEEB');
+                            gradient.addColorStop(1, 'rgba(30, 144, 255, 0.6)');
+                        }
+                        
+                        ctx.fillStyle = gradient;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // Background clouds
+        class Cloud {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height * 0.7;
+                this.size = Math.random() * 40 + 20;
+                this.speed = Math.random() * 1 + 0.5;
+                this.opacity = Math.random() * 0.3 + 0.1;
+            }
+            
+            update() {
+                this.x -= this.speed;
+                if (this.x < -100) this.x = width + 100;
+            }
+            
+            draw(ctx) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.arc(this.x + this.size * 0.7, this.y - this.size * 0.3, this.size * 0.8, 0, Math.PI * 2);
+                ctx.arc(this.x - this.size * 0.5, this.y + this.size * 0.2, this.size * 0.6, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.globalAlpha = 1.0;
             }
         }
-
-        // Game units
-        class Unit {
-            constructor(x, y, type, owner) {
+        
+        // Ground objects
+        class GroundObject {
+            constructor(x, type) {
+                this.x = x;
+                this.type = type; // 'tank', 'bunker', 'artillery', 'cannon'
+                this.width = type === 'tank' ? 40 : type === 'bunker' ? 80 : 30;
+                this.height = type === 'tank' ? 25 : type === 'bunker' ? 40 : 20;
+                this.y = height - this.height - 20;
+                this.active = true;
+                
+                // Create particles when destroyed
+                this.destructionParticles = [];
+            }
+            
+            draw(ctx) {
+                if (!this.active) return;
+                
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                switch (this.type) {
+                    case 'tank':
+                        // Tank body
+                        ctx.fillStyle = '#654321';
+                        ctx.fillRect(0, 10, this.width, this.height - 10);
+                        // Turret
+                        ctx.fillStyle = '#8B4513';
+                        ctx.beginPath();
+                        ctx.arc(this.width / 2, 10, this.width / 2.5, Math.PI, 0);
+                        ctx.fill();
+                        // Barrel
+                        ctx.fillStyle = '#4a3b2a';
+                        ctx.fillRect(this.width / 2 + 5, 5, this.width, 6);
+                        break;
+                        
+                    case 'bunker':
+                        // Bunker structure
+                        ctx.fillStyle = '#808080';
+                        ctx.fillRect(0, 10, this.width, this.height - 10);
+                        // Roof
+                        ctx.beginPath();
+                        ctx.moveTo(0, 10);
+                        ctx.lineTo(this.width / 2, -15);
+                        ctx.lineTo(this.width, 10);
+                        ctx.closePath();
+                        ctx.fill();
+                        // Machicolations
+                        for (let i = 0; i < this.width; i += 20) {
+                            ctx.fillRect(i + 5, 10, 10, 15);
+                        }
+                        break;
+                        
+                    case 'artillery':
+                        // Artillery piece
+                        ctx.fillStyle = '#654321';
+                        ctx.fillRect(0, 15, this.width, this.height - 15);
+                        // Barrel
+                        ctx.fillStyle = '#8B4513';
+                        ctx.beginPath();
+                        ctx.arc(this.width / 2, 15, 8, Math.PI, 0);
+                        ctx.fill();
+                        break;
+                        
+                    case 'cannon':
+                        // Anti-aircraft cannon
+                        ctx.fillStyle = '#777777';
+                        ctx.fillRect(0, 15, this.width, this.height - 15);
+                        // Gun barrel
+                        ctx.strokeStyle = '#555555';
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.moveTo(this.width / 2, 15);
+                        ctx.lineTo(this.width / 2 + 30, 5);
+                        ctx.stroke();
+                        break;
+                }
+                
+                ctx.restore();
+            }
+            
+            createExplosion() {
+                this.active = false;
+                sound.playExplosion();
+                
+                // Create explosion particles
+                for (let i = 0; i < 30; i++) {
+                    game.particles.push(new Particle(this.x + this.width/2, this.y + this.height/2, 'fire'));
+                }
+                for (let i = 0; i < 15; i++) {
+                    game.particles.push(new Particle(this.x + this.width/2, this.y + this.height/2, 'smoke'));
+                }
+                for (let i = 0; i < 20; i++) {
+                    game.particles.push(new Particle(this.x + this.width/2, this.y + this.height/2, 'debris'));
+                }
+                
+                // Screen shake
+                canvas.style.transform = 'translate(5px, 5px)';
+                setTimeout(() => {
+                    canvas.style.transform = 'none';
+                }, 100);
+            }
+        }
+        
+        // Flak cannon
+        class FlakCannon {
+            constructor(x) {
+                this.x = x;
+                this.y = height - 40;
+                this.targetX = width / 2;
+                this.targetY = height / 2;
+                this.lastShot = 0;
+                this.shootInterval = Math.random() * 150 + 100; // Random interval
+            }
+            
+            update(playerX, playerY) {
+                // Update target based on player position
+                if (game.time - this.lastShot > this.shootInterval) {
+                    this.shoot();
+                    this.lastShot = game.time;
+                    this.shootInterval = Math.random() * 150 + 80; // Change interval
+                }
+            }
+            
+            shoot() {
+                sound.playFlak();
+                
+                // Create tracers
+                for (let i = 0; i < 3; i++) {
+                    game.particles.push(new Particle(
+                        this.x,
+                        this.y - 10,
+                        'tracer',
+                        `rgba(255, ${Math.random() * 100 + 155}, 0, 0.8)`
+                    ));
+                }
+            }
+            
+            draw(ctx) {
+                // Draw cannon
+                ctx.fillStyle = '#666666';
+                ctx.fillRect(this.x - 10, this.y - 20, 20, 20);
+                
+                // Barrel
+                ctx.strokeStyle = '#444444';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y - 20);
+                ctx.lineTo(this.x + Math.sin(game.time * 0.01) * 30, this.y - 50);
+                ctx.stroke();
+                
+                // Base
+                ctx.fillStyle = '#333333';
+                ctx.fillRect(this.x - 15, this.y, 30, 20);
+            }
+        }
+        
+        // Bomber aircraft
+        class Bomber {
+            constructor() {
+                this.x = width / 4;
+                this.y = height / 3;
+                this.width = 80;
+                this.height = 30;
+                this.speedX = 2;
+                this.targetY = height / 3;
+                this.bankAngle = 0;
+            }
+            
+            update() {
+                // Smooth movement toward mouse Y
+                const dy = game.mouseY - this.y;
+                this.y += dy * 0.1;
+                
+                // Calculate bank angle based on movement
+                this.bankAngle = Math.max(-0.3, Math.min(0.3, -dy * 0.002));
+                
+                // Engine sound loop
+                if (game.time % 15 === 0) {
+                    sound.playEngine();
+                }
+            }
+            
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.bankAngle);
+                
+                // Draw B-17 bomber (simplified)
+                
+                // Fuselage
+                ctx.fillStyle = '#C0C0C0';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.width/2, this.height/3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Wings
+                ctx.fillStyle = '#A9A9A9';
+                ctx.fillRect(-this.width/4, -5, this.width/2, 10);
+                
+                // Tail
+                ctx.beginPath();
+                ctx.moveTo(-this.width/2 + 10, -5);
+                ctx.lineTo(-this.width/2 - 15, -25);
+                ctx.lineTo(-this.width/2 - 5, -5);
+                ctx.fill();
+                
+                // Engine nacelles
+                for (let i = 0; i < 3; i++) {
+                    const x = -this.width/4 + i * this.width/6;
+                    ctx.fillStyle = '#808080';
+                    ctx.beginPath();
+                    ctx.arc(x, 5, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Propellers
+                    if (game.time % 3 === 0) {
+                        ctx.strokeStyle = '#4a4a4a';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(x - 12, 5);
+                        ctx.lineTo(x + 12, 5);
+                        ctx.stroke();
+                    }
+                }
+                
+                // Bomb bay doors
+                ctx.fillStyle = '#696969';
+                ctx.fillRect(-20, 5, 40, 5);
+                
+                ctx.restore();
+            }
+            
+            dropBomb() {
+                if (game.fuel > 5) {
+                    game.bombs.push(new Bomb(this.x, this.y + 15));
+                    sound.playBombDrop();
+                    game.fuel -= 5;
+                    
+                    // Small explosion effect
+                    for (let i = 0; i < 5; i++) {
+                        game.particles.push(new Particle(this.x, this.y + 25, 'smoke'));
+                    }
+                } else {
+                    // Empty fuel warning
+                    ctx.fillStyle = '#ff3333';
+                    ctx.font = '24px Courier New';
+                    ctx.textAlign = 'center';
+                    ctx.fillText("WARNING: LOW FUEL!", width/2, height - 50);
+                }
+            }
+        }
+        
+        // Bomb class
+        class Bomb {
+            constructor(x, y) {
                 this.x = x;
                 this.y = y;
-                this.type = type; // 'infantry', 'tank', 'artillery'
-                this.owner = owner; // 'player', 'enemy'
+                this.speedY = 5;
+                this.trail = [];
+                this.exploded = false;
+            }
+            
+            update() {
+                if (this.exploded) return;
                 
-                // Base stats
-                if (type === 'infantry') {
-                    this.hp = 30;
-                    this.maxHp = 30;
-                    this.damage = 5;
-                    this.range = 1;
-                    this.speed = 1;
-                    this.costFuel = 5;
-                    this.costAmmo = 2;
-                } else if (type === 'tank') {
-                    this.hp = 60;
-                    this.maxHp = 60;
-                    this.damage = 12;
-                    this.range = 2;
-                    this.speed = 2;
-                    this.costFuel = 15;
-                    this.costAmmo = 8;
-                } else if (type === 'artillery') {
-                    this.hp = 20;
-                    this.maxHp = 20;
-                    this.damage = 20;
-                    this.range = 3;
-                    this.speed = 1;
-                    this.costFuel = 10;
-                    this.costAmmo = 15;
+                this.y += this.speedY;
+                this.speedY += 0.2; // gravity
+                
+                // Add trail
+                this.trail.push({x: this.x, y: this.y, life: 15});
+                if (this.trail.length > 8) {
+                    this.trail.shift();
                 }
                 
-                this.moved = false;
+                // Check ground collision
+                if (this.y >= height - 20) {
+                    this.explode();
+                }
             }
-
-            move(dx, dy) {
-                if (this.moved) return false;
+            
+            explode() {
+                this.exploded = true;
                 
-                const newX = this.x + dx * this.speed;
-                const newY = this.y + dy * this.speed;
-                
-                // Check boundaries
-                if (newX < 0 || newX >= CONFIG.cols || newY < 0 || newY >= CONFIG.rows) {
-                    return false;
+                // Create explosion particles
+                for (let i = 0; i < 40; i++) {
+                    game.particles.push(new Particle(this.x, this.y - 5, 'fire'));
+                }
+                for (let i = 0; i20; i++) {
+                    game.particles.push(new Particle(this.x, this.y - 5, 'smoke'));
+                }
+                for (let i = 0; i < 30; i++) {
+                    game.particles.push(new Particle(this.x, this.y - 5, 'debris'));
                 }
                 
-                this.x = newX;
-                this.y = newY;
-                this.moved = true;
-                return true;
-            }
-
-            attack(target, game) {
-                const distance = Math.sqrt(Math.pow(target.x - this.x, 2) + Math.pow(target.y - this.y, 2));
-                
-                if (distance <= this.range) {
-                    target.hp -= this.damage;
-                    
-                    // Add subtle particle effect
-                    const centerX = this.x * CONFIG.tileSize + CONFIG.tileSize / 2;
-                    const centerY = this.y * CONFIG.tileSize + CONFIG.tileSize / 2;
-                    game.particles.push(new Particle(centerX, centerY, '#ffcc00'));
-                    
-                    if (target.hp <= 0) {
-                        // Gentle explosion effect
-                        for (let i = 0; i < 5; i++) {
-                            game.particles.push(new Particle(
-                                target.x * CONFIG.tileSize + CONFIG.tileSize/2,
-                                target.y * CONFIG.tileSize + CONFIG.tileSize/2,
-                                '#ff6600'
-                            ));
-                        }
+                // Check target hits
+                game.groundObjects.forEach(obj => {
+                    if (obj.active) {
+                        const dx = obj.x + obj.width/2 - this.x;
+                        const dy = obj.y + obj.height/2 - (this.y - 5);
+                        const dist = Math.sqrt(dx*dx + dy*dy);
                         
-                        if (this.owner === 'player') {
-                            game.logMessage(`Enemy ${target.type} destroyed!`, 'success');
-                        }
-                    } else {
-                        // Subtle screen shake
-                        const container = document.getElementById('canvas-container');
-                        container.classList.add('subtle-shake');
-                        setTimeout(() => {
-                            container.classList.remove('subtle-shake');
-                        }, 200);
-                        
-                        game.sound.playRadio();
-                    }
-                    
-                    return true;
-                }
-                
-                return false;
-            }
-        }
-
-        // Main Game Class
-        class Game {
-            constructor() {
-                this.canvas = document.getElementById('gameCanvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.particles = [];
-                this.units = [];
-                this.enemies = [];
-                this.resources = {
-                    fuel: 500,
-                    ammo: 800,
-                    intel: 3
-                };
-                this.civilianTrust = 100;
-                this.selectedUnit = null;
-                this.map = [];
-                this.reconActive = false;
-                this.sound = new SoundSystem();
-                
-                this.initMap();
-                this.spawnUnits();
-                this.setupInput();
-                this.loop();
-                
-                // Log welcome message
-                setTimeout(() => {
-                    this.logMessage("Welcome, General. Enemy forces detected in sector.", 'info');
-                    this.logMessage("Select units and command your troops to victory!", 'success');
-                }, 500);
-            }
-
-            initMap() {
-                for (let y = 0; y < CONFIG.rows; y++) {
-                    const row = [];
-                    for (let x = 0; x < CONFIG.cols; x++) {
-                        let type = 'grass';
-                        
-                        // Create some terrain features
-                        if (x === 2 && y > 1 && y < 6) type = 'forest';
-                        if (x === 5 && y > 1 && y < 6) type = 'forest';
-                        if (y === 3 && x > 0 && x < 8) type = 'road';
-                        
-                        // Add a town
-                        if (x === 7 && y === 2) type = 'town';
-                        if (x === 1 && y === 5) type = 'town';
-                        
-                        row.push({
-                            x, y,
-                            type,
-                            revealed: false
-                        });
-                    }
-                    this.map.push(row);
-                }
-                
-                // Reveal starting positions
-                for (let y = 0; y < CONFIG.rows; y++) {
-                    for (let x = 0; x < 3; x++) {
-                        if (this.map[y][x]) {
-                            this.map[y][x].revealed = true;
-                        }
-                    }
-                }
-            }
-
-            spawnUnits() {
-                // Player units
-                const playerPositions = [
-                    {x: 0, y: 3, type: 'infantry'},
-                    {x: 1, y: 2, type: 'tank'},
-                    {x: 1, y: 5, type: 'artillery'},
-                    {x: 2, y: 4, type: 'infantry'}
-                ];
-                
-                playerPositions.forEach(pos => {
-                    this.units.push(new Unit(pos.x, pos.y, pos.type, 'player'));
-                });
-
-                // Enemy units
-                const enemyPositions = [
-                    {x: 9, y: 3, type: 'infantry'},
-                    {x: 8, y: 2, type: 'tank'},
-                    {x: 8, y: 5, type: 'artillery'},
-                    {x: 7, y: 4, type: 'infantry'}
-                ];
-                
-                enemyPositions.forEach(pos => {
-                    this.enemies.push(new Unit(pos.x, pos.y, pos.type, 'enemy'));
-                });
-            }
-
-            setupInput() {
-                this.canvas.addEventListener('click', (e) => {
-                    const rect = this.canvas.getBoundingClientRect();
-                    const x = Math.floor((e.clientX - rect.left) / CONFIG.tileSize);
-                    const y = Math.floor((e.clientY - rect.top) / CONFIG.tileSize);
-                    
-                    this.handleTileClick(x, y);
-                });
-            }
-
-            handleTileClick(x, y) {
-                if (x < 0 || x >= CONFIG.cols || y < 0 || y >= CONFIG.rows) return;
-
-                const clickedUnit = this.getUnitAt(x, y);
-                
-                if (clickedUnit && clickedUnit.owner === 'player') {
-                    this.selectUnit(clickedUnit);
-                } else if (this.selectedUnit) {
-                    this.moveSelectedUnit(x, y);
-                }
-            }
-
-            getUnitAt(x, y) {
-                const playerUnit = this.units.find(u => u.x === x && u.y === y);
-                if (playerUnit) return playerUnit;
-                
-                const enemyUnit = this.enemies.find(u => u.x === x && u.y === y);
-                if (enemyUnit) return enemyUnit;
-                
-                return null;
-            }
-
-            selectUnit(unit) {
-                this.selectedUnit = unit;
-                this.sound.playSelect();
-                this.updateUI();
-            }
-
-            moveSelectedUnit(targetX, targetY) {
-                if (!this.selectedUnit || this.selectedUnit.moved) {
-                    this.logMessage("This unit has already moved!", 'info');
-                    return;
-                }
-
-                const dx = targetX - this.selectedUnit.x;
-                const dy = targetY - this.selectedUnit.y;
-
-                // Check if it's a valid move
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance <= 1.5) { // Adjacent tiles
-                    if (this.resources.fuel >= this.selectedUnit.costFuel) {
-                        if (this.selectedUnit.move(dx, dy)) {
-                            this.resources.fuel -= this.selectedUnit.costFuel;
-                            this.logMessage(`Unit moved to (${targetX}, ${targetY})`, 'success');
-                            this.updateUI();
-                        }
-                    } else {
-                        this.logMessage("Not enough fuel!", 'danger');
-                    }
-                } else {
-                    // Check if attacking
-                    const targetUnit = this.getUnitAt(targetX, targetY);
-                    if (targetUnit && targetUnit.owner === 'enemy') {
-                        if (this.selectedUnit.attack(targetUnit, this)) {
-                            this.resources.ammo -= this.selectedUnit.costAmmo;
-                            this.logMessage(`Attacked enemy!`, 'success');
+                        if (dist < 60) { // Explosion radius
+                            obj.createExplosion();
+                            game.targetsDestroyed++;
                             
-                            if (this.enemies.filter(e => e.hp > 0).length === 0) {
-                                this.gameOver(true);
-                            }
-                        } else {
-                            this.logMessage("Out of range!", 'info');
-                        }
-                    }
-                }
-            }
-
-            recon() {
-                if (this.resources.intel > 0) {
-                    this.resources.intel--;
-                    this.reconActive = true;
-                    
-                    for (let y = 0; y < CONFIG.rows; y++) {
-                        for (let x = 0; x < CONFIG.cols; x++) {
-                            this.map[y][x].revealed = true;
-                        }
-                    }
-                    
-                    this.logMessage("Recon plane deployed - enemy positions revealed!", 'info');
-                    this.sound.playRadio();
-                    this.updateUI();
-                    
-                    setTimeout(() => {
-                        this.reconActive = false;
-                        for (let y = 0; y < CONFIG.rows; y++) {
-                            for (let x = 0; x < CONFIG.cols; x++) {
-                                let revealedNearPlayer = false;
-                                for (const unit of this.units) {
-                                    const dist = Math.sqrt(Math.pow(unit.x - x, 2) + Math.pow(unit.y - y, 2));
-                                    if (dist < 3) {
-                                        revealedNearPlayer = true;
-                                        break;
-                                    }
-                                }
-                                this.map[y][x].revealed = revealedNearPlayer;
+                            // Check win condition
+                            if (game.targetsDestroyed >= game.totalTargets) {
+                                setTimeout(() => {
+                                    game.running = false;
+                                    document.getElementById('startScreen').style.display = 'none';
+                                    document.getElementById('gameOverScreen').style.display = 'block';
+                                    document.getElementById('gameOverTitle').textContent = "MISSION ACCOMPLISHED!";
+                                    document.getElementById('gameOverMessage').innerHTML = `
+                                        All enemy targets neutralized.<br>
+                                        Good flying, pilot!<br><br>
+                                        Targets Destroyed: ${game.targetsDestroyed}/${game.totalTargets}
+                                    `;
+                                    sound.playMissionComplete();
+                                }, 2000);
                             }
                         }
-                    }, 4000);
-                } else {
-                    this.logMessage("No reconnaissance planes available!", 'danger');
-                }
+                    }
+                });
             }
-
-            advance() {
-                let movedCount = 0;
+            
+            draw(ctx) {
+                if (this.exploded) return;
                 
-                for (const unit of this.units) {
-                    if (!unit.moved && this.resources.fuel >= unit.costFuel) {
-                        const targetX = Math.min(unit.x + unit.speed, CONFIG.cols - 1);
-                        
-                        if (targetX !== unit.x) {
-                            unit.x = targetX;
-                            this.resources.fuel -= unit.costFuel;
-                            movedCount++;
-                        }
+                // Draw trail
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                if (this.trail.length > 0) {
+                    ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                    for (let i = 1; i < this.trail.length; i++) {
+                        ctx.lineTo(this.trail[i].x, this.trail[i].y);
                     }
                 }
+                ctx.stroke();
                 
-                if (movedCount > 0) {
-                    this.logMessage("All units advanced!", 'success');
-                    this.sound.playRadio();
-                    this.updateUI();
-                } else {
-                    this.logMessage("Not enough fuel to advance all units.", 'info');
-                }
-            }
-
-            defend() {
-                for (const unit of this.units) {
-                    if (!unit.moved && unit.hp < unit.maxHp) {
-                        unit.hp = Math.min(unit.hp + 10, unit.maxHp);
-                        unit.moved = true;
-                    }
-                }
+                // Draw bomb
+                ctx.fillStyle = '#333333';
+                ctx.beginPath();
+                ctx.ellipse(this.x, this.y, 5, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
                 
-                this.logMessage("Units taken defensive position. HP recovered!", 'success');
-                this.updateUI();
-            }
-
-            airstrike() {
-                if (this.resources.fuel >= 50) {
-                    this.resources.fuel -= 50;
-                    
-                    const activeEnemies = this.enemies.filter(e => e.hp > 0);
-                    if (activeEnemies.length > 0) {
-                        const target = activeEnemies[Math.floor(Math.random() * activeEnemies.length)];
-                        target.hp -= 20;
-                        
-                        // Subtle particle effect
-                        for (let i = 0; i < 5; i++) {
-                            this.particles.push(new Particle(
-                                target.x * CONFIG.tileSize + CONFIG.tileSize/2,
-                                target.y * CONFIG.tileSize + CONFIG.tileSize/2,
-                                '#ffcc00'
-                            ));
-                        }
-                        
-                        this.logMessage("Airstrike delivered! Enemy unit hit.", 'success');
-                        this.sound.playExplosion();
-                        
-                        if (target.hp <= 0) {
-                            this.logMessage(`Enemy ${target.type} destroyed by airstrike!`, 'success');
-                        }
-                    } else {
-                        this.logMessage("No enemy targets in range for airstrike.", 'info');
-                    }
-                    
-                    this.updateUI();
-                } else {
-                    this.logMessage("Not enough fuel for airstrike!", 'danger');
-                }
-            }
-
-            toggleSound() {
-                const enabled = this.sound.toggle();
-                document.querySelector('.sound-toggle').textContent = 
-                    enabled ? '🔊 SOUND: ON' : '🔇 SOUND: OFF';
-            }
-
-            updateUnits() {
-                // Reset movement status
-                for (const unit of this.units) {
-                    unit.moved = false;
-                }
-                
-                // Enemy AI - simple movement
-                for (const enemy of this.enemies) {
-                    if (enemy.hp <= 0) continue;
-                    
-                    let closestPlayerUnit = null;
-                    let minDistance = Infinity;
-                    
-                    for (const unit of this.units) {
-                        const dist = Math.sqrt(Math.pow(unit.x - enemy.x, 2) + Math.pow(unit.y - enemy.y, 2));
-                        if (dist < minDistance) {
-                            minDistance = dist;
-                            closestPlayerUnit = unit;
-                        }
-                    }
-                    
-                    if (closestPlayerUnit && minDistance <= enemy.range) {
-                        closestPlayerUnit.hp -= enemy.damage;
-                        
-                        const container = document.getElementById('canvas-container');
-                        container.classList.add('subtle-shake');
-                        setTimeout(() => {
-                            container.classList.remove('subtle-shake');
-                        }, 200);
-                        
-                        this.logMessage(`Enemy ${enemy.type} attacks!`, 'danger');
-                        this.sound.playExplosion();
-                    } else if (closestPlayerUnit) {
-                        const dx = Math.sign(closestPlayerUnit.x - enemy.x);
-                        const dy = Math.sign(closestPlayerUnit.y - enemy.y);
-                        
-                        let newX = enemy.x + dx;
-                        let newY = enemy.y + dy;
-                        
-                        if (newX >= 0 && newX < CONFIG.cols && newY >= 0 && newY < CONFIG.rows) {
-                            enemy.x = newX;
-                            enemy.y = newY;
-                        }
-                    }
-                }
-                
-                // Check win/loss
-                const remainingPlayerUnits = this.units.filter(u => u.hp > 0);
-                if (remainingPlayerUnits.length === 0) {
-                    this.gameOver(false);
-                }
-            }
-
-            gameOver(playerWon) {
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-                
-                this.ctx.font = '48px "Courier New"';
-                this.ctx.textAlign = 'center';
-                
-                if (playerWon) {
-                    this.ctx.fillStyle = '#33ff33';
-                    this.ctx.fillText('MISSION ACCOMPLISHED!', this.canvas.width / 2, this.canvas.height / 2);
-                    
-                    this.ctx.font = '24px "Courier New"';
-                    this.ctx.fillStyle = '#ffffff';
-                    this.ctx.fillText('Enemy forces neutralized. Civilian areas secured.', this.canvas.width / 2, this.canvas.height / 2 + 50);
-                } else {
-                    this.ctx.fillStyle = '#ff3333';
-                    this.ctx.fillText('MISSION FAILED', this.canvas.width / 2, this.canvas.height / 2);
-                    
-                    this.ctx.font = '24px "Courier New"';
-                    this.ctx.fillStyle = '#ffffff';
-                    this.ctx.fillText('All units compromised. Retreat immediately!', this.canvas.width / 2, this.canvas.height / 2 + 50);
-                }
-                
-                setTimeout(() => {
-                    const restartBtn = document.createElement('button');
-                    restartBtn.textContent = 'RESTART MISSION';
-                    restartBtn.style.cssText = `
-                        position: absolute;
-                        top: ${this.canvas.offsetHeight / 2 + 100}px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        padding: 15px 30px;
-                        font-size: 24px;
-                        background-color: #33ff33;
-                        color: #000;
-                        border: none;
-                        cursor: pointer;
-                        z-index: 1000;
-                    `;
-                    
-                    restartBtn.onclick = () => location.reload();
-                    document.body.appendChild(restartBtn);
-                }, 2000);
-            }
-
-            updateUI() {
-                document.getElementById('fuelDisplay').textContent = this.resources.fuel;
-                document.getElementById('ammoDisplay').textContent = this.resources.ammo;
-                document.getElementById('intelDisplay').textContent = this.resources.intel;
-                document.getElementById('civilianDisplay').textContent = `${this.civilianTrust}%`;
-                
-                const unitsContainer = document.getElementById('unitsContainer');
-                unitsContainer.innerHTML = '';
-                
-                for (const unit of this.units) {
-                    if (unit.hp > 0) {
-                        const unitDiv = document.createElement('div');
-                        unitDiv.className = 'unit-card';
-                        
-                        const isSelected = this.selectedUnit === unit;
-                        if (isSelected) {
-                            unitDiv.style.border = '2px solid #33ff33';
-                        }
-                        
-                        unitDiv.innerHTML = `
-                            <div class="unit-name">${unit.type.toUpperCase()} ${isSelected ? '(SELECTED)' : ''}</div>
-                            <div class="unit-stats">
-                                <span class="stat-label">HP:</span>
-                                <span class="stat-value">${unit.hp}/${unit.maxHp}</span>
-                                <span class="stat-label">FUEL:</span>
-                                <span class="stat-value">${this.resources.fuel >= unit.costFuel ? 'OK' : 'LOW'}</span>
-                                <span class="stat-label">AMMO:</span>
-                                <span class="stat-value">${this.resources.ammo >= unit.costAmmo ? 'OK' : 'LOW'}</span>
-                            </div>
-                        `;
-                        
-                        unitsContainer.appendChild(unitDiv);
-                    }
-                }
-            }
-
-            logMessage(message, type = 'info') {
-                const logContainer = document.getElementById('logContainer');
-                const entry = document.createElement('div');
-                entry.className = `log-entry ${type}`;
-                
-                const timestamp = new Date().toLocaleTimeString();
-                entry.textContent = `[${timestamp}] ${message}`;
-                
-                logContainer.appendChild(entry);
-                logContainer.scrollTop = logContainer.scrollHeight;
-            }
-
-            drawMap() {
-                this.ctx.fillStyle = '#1a1a1a';
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-                
-                for (let y = 0; y < CONFIG.rows; y++) {
-                    for (let x = 0; x < CONFIG.cols; x++) {
-                        const tile = this.map[y][x];
-                        
-                        if (!tile.revealed && !this.reconActive) continue;
-                        
-                        let color;
-                        switch (tile.type) {
-                            case 'grass': color = CONFIG.colors.grass; break;
-                            case 'forest': color = CONFIG.colors.forest; break;
-                            case 'town': color = CONFIG.colors.town; break;
-                            case 'road': color = CONFIG.colors.road; break;
-                            default: color = CONFIG.colors.grass;
-                        }
-                        
-                        this.ctx.fillStyle = color;
-                        this.ctx.fillRect(x * CONFIG.tileSize, y * CONFIG.tileSize, CONFIG.tileSize, CONFIG.tileSize);
-                        
-                        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-                        this.ctx.strokeRect(x * CONFIG.tileSize, y * CONFIG.tileSize, CONFIG.tileSize, CONFIG.tileSize);
-                        
-                        // Add terrain details
-                        if (tile.type === 'forest') {
-                            this.ctx.fillStyle = '#153a18';
-                            this.ctx.fillRect(x * CONFIG.tileSize + 10, y * CONFIG.tileSize + 10, 44, 44);
-                        } else if (tile.type === 'town') {
-                            this.ctx.fillStyle = '#9e423c';
-                            this.ctx.fillRect(x * CONFIG.tileSize + 8, y * CONFIG.tileSize + 8, 48, 48);
-                            this.ctx.fillStyle = '#ffffcc';
-                            this.ctx.fillRect(x * CONFIG.tileSize + 15, y * CONFIG.tileSize + 15, 10, 10);
-                        }
-                    }
-                }
-            }
-
-            drawUnits() {
-                for (const unit of this.units) {
-                    if (unit.hp <= 0) continue;
-                    
-                    const centerX = unit.x * CONFIG.tileSize + CONFIG.tileSize / 2;
-                    const centerY = unit.y * CONFIG.tileSize + CONFIG.tileSize / 2;
-                    
-                    this.ctx.fillStyle = '#3366ff';
-                    if (unit.type === 'tank') {
-                        this.ctx.fillRect(unit.x * CONFIG.tileSize + 15, unit.y * CONFIG.tileSize + 15, 34, 34);
-                    } else if (unit.type === 'artillery') {
-                        this.ctx.beginPath();
-                        this.ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
-                        this.ctx.fill();
-                    } else {
-                        this.ctx.beginPath();
-                        this.ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
-                        this.ctx.fill();
-                    }
-                    
-                    if (this.selectedUnit === unit) {
-                        this.ctx.strokeStyle = '#33ff33';
-                        this.ctx.lineWidth = 2;
-                        this.ctx.strokeRect(unit.x * CONFIG.tileSize - 5, unit.y * CONFIG.tileSize - 5, 
-                                          CONFIG.tileSize + 10, CONFIG.tileSize + 10);
-                    }
-                    
-                    const hpPercent = unit.hp / unit.maxHp;
-                    this.ctx.fillStyle = '#ff3333';
-                    this.ctx.fillRect(unit.x * CONFIG.tileSize + 5, unit.y * CONFIG.tileSize - 8, 
-                                    CONFIG.tileSize - 10, 4);
-                    
-                    this.ctx.fillStyle = '#33ff33';
-                    this.ctx.fillRect(unit.x * CONFIG.tileSize + 5, unit.y * CONFIG.tileSize - 8, 
-                                    (CONFIG.tileSize - 10) * hpPercent, 4);
-                }
-                
-                for (const enemy of this.enemies) {
-                    if (enemy.hp <= 0) continue;
-                    
-                    let shouldDraw = this.reconActive;
-                    
-                    for (const unit of this.units) {
-                        const dist = Math.sqrt(Math.pow(unit.x - enemy.x, 2) + Math.pow(unit.y - enemy.y, 2));
-                        if (dist < 3) {
-                            shouldDraw = true;
-                            break;
-                        }
-                    }
-                    
-                    if (!shouldDraw) continue;
-                    
-                    const centerX = enemy.x * CONFIG.tileSize + CONFIG.tileSize / 2;
-                    const centerY = enemy.y * CONFIG.tileSize + CONFIG.tileSize / 2;
-                    
-                    this.ctx.fillStyle = '#ff3333';
-                    if (enemy.type === 'tank') {
-                        this.ctx.fillRect(enemy.x * CONFIG.tileSize + 15, enemy.y * CONFIG.tileSize + 15, 34, 34);
-                    } else if (enemy.type === 'artillery') {
-                        this.ctx.beginPath();
-                        this.ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
-                        this.ctx.fill();
-                    } else {
-                        this.ctx.beginPath();
-                        this.ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
-                        this.ctx.fill();
-                    }
-                    
-                    const hpPercent = enemy.hp / enemy.maxHp;
-                    this.ctx.fillStyle = '#ff3333';
-                    this.ctx.fillRect(enemy.x * CONFIG.tileSize + 5, enemy.y * CONFIG.tileSize - 8, 
-                                    CONFIG.tileSize - 10, 4);
-                    
-                    this.ctx.fillStyle = '#33ff33';
-                    this.ctx.fillRect(enemy.x * CONFIG.tileSize + 5, enemy.y * CONFIG.tileSize - 8, 
-                                    (CONFIG.tileSize - 10) * hpPercent, 4);
-                }
-            }
-
-            drawParticles() {
-                for (const particle of this.particles) {
-                    particle.update();
-                    particle.draw(this.ctx);
-                }
-                
-                this.particles = this.particles.filter(p => p.life > 0);
-            }
-
-            loop() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                
-                this.drawMap();
-                this.drawUnits();
-                this.drawParticles();
-                
-                this.updateUnits();
-                this.updateUI();
-                
-                requestAnimationFrame(() => this.loop());
+                ctx.strokeStyle = '#ff6600';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(this.x - 3, this.y + 8);
+                ctx.lineTo(this.x + 3, this.y + 8);
+                ctx.stroke();
             }
         }
-
-        window.onload = () => {
-            window.game = new Game();
-        };
+        
+        // Initialize game objects
+        let clouds = [];
+        let groundObjects = [];
+        let flakCannons = [];
+        let bombs = [];
+        let particles = [];
+        let bomber;
+        
+        function initGame() {
+            clouds = [];
+            for (let i = 0; i < 15; i++) {
+                clouds.push(new Cloud());
+            }
+            
+            groundObjects = [];
+            // Create targets along the path
+            const targetPositions = [300, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2100];
+            
+            for (let i = 0; i < targetPositions.length; i++) {
+                const types = ['tank', 'bunker', 'artillery', 'cannon'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                groundObjects.push(new GroundObject(targetPositions[i], type));
+            }
+            
+            // Create flak cannons
+            flakCannons = [];
+            for (let i = 0; i < 6; i++) {
+                flakCannons.push(new FlakCannon(400 + i * 250));
+            }
+            
+            bombs = [];
+            particles = [];
+            bomber = new Bomber();
+        }
+        
+        // Input handling
+        window.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            game.mouseX = e.clientX - rect.left;
+            game.mouseY = e.clientY - rect.top;
+        });
+        
+        window.addEventListener('mousedown', () => {
+            if (game.running && bomber) {
+                bomber.dropBomb();
+            }
+        });
+        
+        // Touch support for mobile
+        window.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            game.mouseX = e.touches[0].clientX - rect.left;
+            game.mouseY = e.touches[0].clientY - rect.top;
+        }, {passive: false});
+        
+        window.addEventListener('touchstart', () => {
+            if (game.running && bomber) {
+                bomber.dropBomb();
+            }
+        });
+        
+        // Main game loop
+        function update() {
+            if (!game.running) return;
+            
+            game.time++;
+            
+            // Update clouds
+            clouds.forEach(cloud => cloud.update());
+            
+            // Update bomber
+            bomber.update();
+            
+            // Update flak cannons
+            flakCannons.forEach(cannon => cannon.update(bomber.x, bomber.y));
+            
+            // Update bombs
+            bombs = bombs.filter(bomb => !bomb.exploded);
+            bombs.forEach(bomb => bomb.update());
+            
+            // Remove exploded bombs after a delay
+            if (game.time % 60 === 0) {
+                bombs = bombs.filter(bomb => game.time - bomb.trail[bomb.trail.length-1]?.y < height + 100 || !bomb.exploded);
+            }
+            
+            // Update particles
+            particles = particles.filter(particle => particle.life > 0);
+            particles.forEach(particle => particle.update());
+            
+            // Update UI
+            updateUI();
+        }
+        
+        function draw() {
+            // Clear canvas with sky gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(1, '#E0F7FA');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            // Draw clouds
+            clouds.forEach(cloud => cloud.draw(ctx));
+            
+            // Draw ground
+            const groundGradient = ctx.createLinearGradient(0, height - 100, 0, height);
+            groundGradient.addColorStop(0, '#228B22');
+            groundGradient.addColorStop(0.5, '#32CD32');
+            groundGradient.addColorStop(1, '#66CDAA');
+            ctx.fillStyle = groundGradient;
+            ctx.fillRect(0, height - 100, width, 100);
+            
+            // Draw ground objects
+            groundObjects.forEach(obj => obj.draw(ctx));
+            
+            // Draw flak cannons
+            flakCannons.forEach(cannon => cannon.draw(ctx));
+            
+            // Draw bombs
+            bombs.forEach(bomb => bomb.draw(ctx));
+            
+            // Draw bomber
+            if (bomber) bomber.draw(ctx);
+            
+            // Draw particles
+            particles.forEach(particle => particle.draw(ctx));
+        }
+        
+        function updateUI() {
+            document.getElementById('targetsValue').textContent = `${game.targetsDestroyed}/${game.totalTargets}`;
+            document.getElementById('hpValue').textContent = `${Math.ceil(game.hp)}%`;
+            document.getElementById('fuelValue').textContent = `${Math.ceil(game.fuel)}%`;
+            
+            const progressPercent = (game.targetsDestroyed / game.totalTargets) * 100;
+            document.getElementById('progressFill').style.width = `${progressPercent}%`;
+        }
+        
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+        
+        // Start button
+        document.getElementById('startButton').addEventListener('click', () => {
+            document.getElementById('startScreen').style.display = 'none';
+            
+            initGame();
+            game.running = true;
+            
+            // Update UI initially
+            updateUI();
+        });
+        
+        // Initialize for first draw (before start)
+        resize();
+        
+        // Start the loop (it will just draw background until game starts)
+        loop();
     </script>
 </body>
 </html>
