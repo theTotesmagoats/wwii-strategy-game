@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Normandy Sky: Bomber Command</title>
+    <title>Night Raid: Bomber Command</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #87CEEB;
+            background-color: #050510;
             font-family: 'Courier New', monospace;
             display: flex;
             justify-content: center;
@@ -19,7 +19,7 @@
         
         #gameCanvas {
             display: block;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         
         .ui-overlay {
@@ -28,28 +28,29 @@
             left: 20px;
             color: white;
             font-size: 18px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
             pointer-events: none;
         }
         
         .hud-panel {
-            background: rgba(0,0,0,0.3);
-            padding: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 15px;
             border-radius: 8px;
-            margin-bottom: 10px;
-            border: 2px solid rgba(255,255,255,0.2);
+            margin-bottom: 15px;
+            border: 2px solid #ffcc00;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
         }
         
         .hud-item {
             display: flex;
             align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
         
         .hud-label {
-            width: 80px;
+            width: 90px;
             font-weight: bold;
-            color: #33ff33;
+            color: #ffcc00;
         }
         
         .hud-value {
@@ -70,19 +71,19 @@
         h1 {
             color: white;
             font-size: 48px;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
             margin-bottom: 20px;
             animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
-            0%, 100% { transform: scale(1); text-shadow: 3px 3px 6px rgba(0,0,0,0.5); }
-            50% { transform: scale(1.05); text-shadow: 4px 4px 8px rgba(0,0,0,0.7); }
+            0%, 100% { transform: scale(1); text-shadow: 3px 3px 6px rgba(0,0,0,0.8); }
+            50% { transform: scale(1.05); text-shadow: 4px 4px 8px rgba(255, 0, 0, 0.6); }
         }
         
         button {
-            background: linear-gradient(to bottom, #33ff33, #2a992a);
-            color: white;
+            background: linear-gradient(to bottom, #ffcc00, #cc9900);
+            color: black;
             border: none;
             padding: 15px 40px;
             font-size: 24px;
@@ -90,25 +91,25 @@
             font-weight: bold;
             cursor: pointer;
             border-radius: 8px;
-            box-shadow: 0 6px rgba(0,100,0,0.3);
+            box-shadow: 0 6px rgba(100, 70, 0, 0.5);
             transition: all 0.1s;
             margin-top: 20px;
         }
         
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px rgba(0,100,0,0.4);
+            box-shadow: 0 8px rgba(100, 70, 0, 0.6);
         }
         
         button:active {
             transform: translateY(2px);
-            box-shadow: 0 2px rgba(0,100,0,0.3);
+            box-shadow: 0 2px rgba(100, 70, 0, 0.5);
         }
         
         .tutorial-text {
             color: white;
             font-size: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
             margin-top: 20px;
             max-width: 600px;
             line-height: 1.5;
@@ -118,7 +119,7 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.6);
             padding: 15px;
             border-radius: 8px;
             border: 2px solid #ffcc00;
@@ -132,7 +133,7 @@
         .progress-bar {
             width: 200px;
             height: 20px;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.8);
             border-radius: 10px;
             overflow: hidden;
         }
@@ -173,16 +174,17 @@
     </div>
     
     <div id="startScreen" class="center-screen">
-        <h1>NORMANDY SKY</h1>
-        <p style="color: white; font-size: 24px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">BOMBER COMMAND</p>
+        <h1>NIGHT RAID</h1>
+        <p style="color: white; font-size: 24px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">BOMBER COMMAND</p>
         
         <div class="tutorial-text">
-            <strong>MISSION:</strong> Bomb enemy targets in Normandy<br><br>
+            <strong>MISSION:</strong> Bomb enemy targets in industrial district<br><br>
+            <strong>AVOID:</strong> Searchlights (they detect you!) & Flak cannons<br>
             <strong>CONTROLS:</strong> Move mouse to steer • Click to drop bombs<br>
-            <strong>AVOID:</strong> Flak cannons and enemy fighters!
+            <strong>CAREFUL:</strong> Near-misses throw your plane violently!
         </div>
         
-        <button id="startButton">START MISSION</button>
+        <button id="startButton">START NIGHT RAID</button>
     </div>
     
     <div id="gameOverScreen" class="center-screen" style="display: none;">
@@ -219,7 +221,11 @@
             mouseY: height / 3,
             time: 0,
             bombs: [],
-            particles: []
+            particles: [],
+            searchlights: [],
+            flakBursts: [],
+            isPainted: false,
+            scrollSpeed: 1.5
         };
         
         // Sound system (Web Audio API)
@@ -419,6 +425,119 @@
             }
         }
         
+        // Searchlight class
+        class Searchlight {
+            constructor(x) {
+                this.x = x;
+                this.angle = Math.PI / 2; // Pointing straight up
+                this.sweepSpeed = (Math.random() - 0.5) * 0.02;
+                this.width = 100; // Beam width at the top of the screen
+            }
+            
+            update() {
+                this.x -= game.scrollSpeed;
+                this.angle += this.sweepSpeed;
+                
+                // Reverse sweep at limits
+                if (this.angle < Math.PI / 4 || this.angle > 3 * Math.PI / 4) {
+                    this.sweepSpeed *= -1;
+                }
+                
+                this.checkDetection();
+            }
+            
+            checkDetection() {
+                // Basic trigonometry to check if bomber is inside the cone
+                const dx = bomber.x - this.x;
+                const dy = height - bomber.y;
+                const targetAngle = Math.atan2(dy, dx);
+                
+                // If angle difference is tight, bomber is lit
+                if (Math.abs(targetAngle - this.angle) < 0.1) {
+                    game.isPainted = true; // Triggers flak frenzy
+                }
+            }
+            
+            draw(ctx) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                ctx.fillStyle = 'rgba(255, 255, 200, 0.15)'; // Pale yellow beam
+                ctx.beginPath();
+                ctx.moveTo(this.x, height); // Base of light
+                
+                // Calculate top corners of the beam
+                const leftX = this.x + Math.cos(this.angle - 0.1) * height * 2;
+                const leftY = height - Math.sin(this.angle - 0.1) * height * 2;
+                const rightX = this.x + Math.cos(this.angle + 0.1) * height * 2;
+                const rightY = height - Math.sin(this.angle + 0.1) * height * 2;
+                
+                ctx.lineTo(leftX, leftY);
+                ctx.lineTo(rightX, rightY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        // Flak Burst class with shockwave physics
+        class FlakBurst {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 1;
+                this.maxRadius = 40 + Math.random() * 30;
+                this.life = 100; // Lingers for a long time
+                
+                this.applyShockwave();
+            }
+            
+            applyShockwave() {
+                const dx = bomber.x - this.x;
+                const dy = bomber.y - this.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < 150) {
+                    // Screen shake based on proximity
+                    const intensity = (150 - dist) / 10;
+                    canvas.style.transform = `translate(${(Math.random()-0.5)*intensity}px, ${(Math.random()-0.5)*intensity}px)`;
+                    setTimeout(() => { canvas.style.transform = 'none'; }, 50);
+                    
+                    // Apply violent impulse to bomber
+                    if (dist < this.maxRadius + 20) {
+                        bomber.y -= (dy / dist) * 20; // Throw the plane
+                        game.hp -= 15;
+                        sound.playExplosion();
+                        
+                        // Create debris particles from impact
+                        for (let i = 0; i < 10; i++) {
+                            game.particles.push(new Particle(bomber.x, bomber.y, 'debris'));
+                        }
+                    }
+                }
+            }
+            
+            update() {
+                this.x -= game.scrollSpeed;
+                if (this.radius < this.maxRadius) this.radius += 5; // Rapid expansion
+                this.life--;
+            }
+            
+            draw(ctx) {
+                ctx.save();
+                if (this.radius < this.maxRadius * 0.3) {
+                    // Initial blinding flash
+                    ctx.fillStyle = '#ffffff';
+                } else {
+                    // Lingering black smoke
+                    ctx.fillStyle = `rgba(20, 20, 20, ${Math.min(1, this.life / 100)})`;
+                }
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
         // Background clouds
         class Cloud {
             constructor() {
@@ -542,7 +661,10 @@
             }
             
             update(playerX, playerY) {
-                if (game.time - this.lastShot > this.shootInterval) {
+                // Increase fire rate if player is painted by searchlight
+                const currentInterval = game.isPainted ? this.shootInterval * 0.2 : this.shootInterval;
+                
+                if (game.time - this.lastShot > currentInterval) {
                     this.shoot();
                     this.lastShot = game.time;
                     this.shootInterval = Math.random() * 150 + 80;
@@ -552,6 +674,7 @@
             shoot() {
                 sound.playFlak();
                 
+                // Create tracers
                 for (let i = 0; i < 3; i++) {
                     game.particles.push(new Particle(
                         this.x,
@@ -559,6 +682,10 @@
                         'tracer'
                     ));
                 }
+                
+                // Create flak burst at bomber's altitude
+                const burstY = Math.max(50, Math.min(height - 100, bomber.y));
+                game.flakBursts.push(new FlakBurst(this.x + (Math.random() - 0.5) * 50, burstY));
             }
             
             draw(ctx) {
@@ -577,7 +704,7 @@
             }
         }
         
-        // Bomber aircraft
+        // Bomber aircraft with progressive damage
         class Bomber {
             constructor() {
                 this.x = width / 4;
@@ -587,6 +714,7 @@
                 this.speedX = 2;
                 this.targetY = height / 3;
                 this.bankAngle = 0;
+                this.fuelLeakTimer = 0;
             }
             
             update() {
@@ -595,8 +723,34 @@
                 
                 this.bankAngle = Math.max(-0.3, Math.min(0.3, -dy * 0.002));
                 
+                // Progressive damage effects
+                if (game.hp < 50) {
+                    this.createEngineFire();
+                }
+                
+                if (this.fuelLeakTimer > 0) {
+                    this.createFuelLeak();
+                    this.fuelLeakTimer--;
+                }
+                
                 if (game.time % 15 === 0) {
                     sound.playEngine();
+                }
+            }
+            
+            createEngineFire() {
+                // Create engine fire particles on one of the engines
+                const engineX = this.x - this.width/4 + Math.random() * this.width/3;
+                for (let i = 0; i < 2; i++) {
+                    game.particles.push(new Particle(engineX, this.y + 5 + Math.random()*10, 'smoke'));
+                }
+            }
+            
+            createFuelLeak() {
+                // Create fuel vapor trail from wings
+                const wingX = this.x - this.width/4;
+                for (let i = 0; i < 3; i++) {
+                    game.particles.push(new Particle(wingX + Math.random()*this.width, this.y + 15, 'debris'));
                 }
             }
             
@@ -605,20 +759,26 @@
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.bankAngle);
                 
+                // Draw B-17 bomber (simplified)
+                
+                // Fuselage
                 ctx.fillStyle = '#C0C0C0';
                 ctx.beginPath();
                 ctx.ellipse(0, 0, this.width/2, this.height/3, 0, 0, Math.PI * 2);
                 ctx.fill();
                 
+                // Wings
                 ctx.fillStyle = '#A9A9A9';
                 ctx.fillRect(-this.width/4, -5, this.width/2, 10);
                 
+                // Tail
                 ctx.beginPath();
                 ctx.moveTo(-this.width/2 + 10, -5);
                 ctx.lineTo(-this.width/2 - 15, -25);
                 ctx.lineTo(-this.width/2 - 5, -5);
                 ctx.fill();
                 
+                // Engine nacelles
                 for (let i = 0; i < 3; i++) {
                     const x = -this.width/4 + i * this.width/6;
                     ctx.fillStyle = '#808080';
@@ -626,6 +786,7 @@
                     ctx.arc(x, 5, 8, 0, Math.PI * 2);
                     ctx.fill();
                     
+                    // Propellers
                     if (game.time % 3 === 0) {
                         ctx.strokeStyle = '#4a4a4a';
                         ctx.lineWidth = 2;
@@ -636,6 +797,7 @@
                     }
                 }
                 
+                // Bomb bay doors
                 ctx.fillStyle = '#696969';
                 ctx.fillRect(-20, 5, 40, 5);
                 
@@ -648,10 +810,12 @@
                     sound.playBombDrop();
                     game.fuel -= 5;
                     
+                    // Small explosion effect
                     for (let i = 0; i < 5; i++) {
                         game.particles.push(new Particle(this.x, this.y + 25, 'smoke'));
                     }
                 } else {
+                    // Empty fuel warning
                     ctx.fillStyle = '#ff3333';
                     ctx.font = '24px Courier New';
                     ctx.textAlign = 'center';
@@ -674,13 +838,15 @@
                 if (this.exploded) return;
                 
                 this.y += this.speedY;
-                this.speedY += 0.2;
+                this.speedY += 0.2; // gravity
                 
+                // Add trail
                 this.trail.push({x: this.x, y: this.y});
                 if (this.trail.length > 8) {
                     this.trail.shift();
                 }
                 
+                // Check ground collision
                 if (this.y >= height - 20) {
                     this.explode();
                 }
@@ -689,6 +855,7 @@
             explode() {
                 this.exploded = true;
                 
+                // Create explosion particles
                 for (let i = 0; i < 40; i++) {
                     game.particles.push(new Particle(this.x, this.y - 5, 'fire'));
                 }
@@ -707,10 +874,11 @@
                     const dy = obj.y + obj.height/2 - (this.y - 5);
                     const dist = Math.sqrt(dx*dx + dy*dy);
                     
-                    if (dist < 60) {
+                    if (dist < 60) { // Explosion radius
                         obj.createExplosion();
                         game.targetsDestroyed++;
                         
+                        // Check win condition
                         if (game.targetsDestroyed >= game.totalTargets) {
                             setTimeout(() => {
                                 game.running = false;
@@ -732,6 +900,7 @@
             draw(ctx) {
                 if (this.exploded) return;
                 
+                // Draw trail
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
@@ -743,6 +912,7 @@
                 }
                 ctx.stroke();
                 
+                // Draw bomb
                 ctx.fillStyle = '#333333';
                 ctx.beginPath();
                 ctx.ellipse(this.x, this.y, 5, 8, 0, 0, Math.PI * 2);
@@ -769,7 +939,15 @@
                 clouds.push(new Cloud());
             }
             
+            // Add searchlights
+            game.searchlights = [];
+            const searchlightPositions = [200, 600, 1000, 1400, 1800];
+            for (let x of searchlightPositions) {
+                game.searchlights.push(new Searchlight(x));
+            }
+            
             groundObjects = [];
+            // Create targets along the path
             const targetPositions = [300, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2100];
             
             for (let i = 0; i < targetPositions.length; i++) {
@@ -778,6 +956,7 @@
                 groundObjects.push(new GroundObject(targetPositions[i], type));
             }
             
+            // Create flak cannons
             flakCannons = [];
             for (let i = 0; i < 6; i++) {
                 flakCannons.push(new FlakCannon(400 + i * 250));
@@ -785,6 +964,7 @@
             
             game.bombs = [];
             game.particles = [];
+            game.flakBursts = [];
             bomber = new Bomber();
         }
         
@@ -822,9 +1002,17 @@
             try {
                 game.time++;
                 
+                // Reset painted status each frame
+                game.isPainted = false;
+                
                 // Update clouds
                 for (let i = 0; i < clouds.length; i++) {
                     clouds[i].update();
+                }
+                
+                // Update searchlights
+                for (let i = 0; i < game.searchlights.length; i++) {
+                    game.searchlights[i].update();
                 }
                 
                 // Update bomber
@@ -846,6 +1034,10 @@
                 }
                 game.bombs = newBombs;
                 
+                // Update flak bursts
+                game.flakBursts.forEach(burst => burst.update());
+                game.flakBursts = game.flakBursts.filter(burst => burst.life > 0);
+                
                 // Update particles with proper cleanup
                 const newParticles = [];
                 for (let i = 0; i < game.particles.length; i++) {
@@ -866,15 +1058,21 @@
         
         function draw() {
             try {
+                // Clear canvas with night sky gradient
                 const gradient = ctx.createLinearGradient(0, 0, 0, height);
-                gradient.addColorStop(0, '#87CEEB');
-                gradient.addColorStop(1, '#E0F7FA');
+                gradient.addColorStop(0, '#050510'); // Deep navy
+                gradient.addColorStop(1, '#111122'); // Pitch black
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, width, height);
                 
                 // Draw clouds
                 for (let i = 0; i < clouds.length; i++) {
                     clouds[i].draw(ctx);
+                }
+                
+                // Draw searchlights
+                for (let i = 0; i < game.searchlights.length; i++) {
+                    game.searchlights[i].draw(ctx);
                 }
                 
                 // Draw ground
@@ -902,6 +1100,11 @@
                 
                 // Draw bomber
                 if (bomber) bomber.draw(ctx);
+                
+                // Draw flak bursts
+                for (let i = 0; i < game.flakBursts.length; i++) {
+                    game.flakBursts[i].draw(ctx);
+                }
                 
                 // Draw particles
                 for (let i = 0; i < game.particles.length; i++) {
