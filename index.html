@@ -8,7 +8,7 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #1a1a1a;
+            background-color: #2a2a2a;
             color: #33ff33;
             font-family: 'Courier New', monospace;
             display: flex;
@@ -19,7 +19,7 @@
         
         h1 {
             margin: 20px 0;
-            text-shadow: 0 0 10px #33ff33, 0 0 20px #33ff33;
+            text-shadow: 0 0 5px #33ff33;
             font-size: 2.5em;
             text-align: center;
         }
@@ -35,7 +35,7 @@
         #canvas-container {
             position: relative;
             border: 3px solid #33ff33;
-            box-shadow: 0 0 20px rgba(51, 255, 51, 0.5);
+            box-shadow: 0 0 15px rgba(51, 255, 51, 0.4);
         }
         
         canvas {
@@ -45,16 +45,16 @@
         
         .ui-panel {
             width: 300px;
-            background-color: #2a2a2a;
+            background-color: #333;
             border: 2px solid #33ff33;
-            padding: 20px;
-            box-shadow: 0 0 15px rgba(51, 255, 51, 0.3);
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(51, 255, 51, 0.3);
         }
         
         .panel-section {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border-bottom: 1px dashed #33ff33;
-            padding-bottom: 15px;
+            padding-bottom: 10px;
         }
         
         .panel-section:last-child {
@@ -73,8 +73,8 @@
             justify-content: space-between;
             margin-bottom: 8px;
             padding: 5px 10px;
-            background-color: #333;
-            border-radius: 4px;
+            background-color: #4a4a4a;
+            border-radius: 3px;
         }
         
         .resource-value {
@@ -90,19 +90,19 @@
             background-color: #2a6e2a;
             color: #33ff33;
             border: 2px solid #33ff33;
-            padding: 10px 15px;
-            margin: 5px 0;
+            padding: 8px 12px;
+            margin: 4px 0;
             width: 100%;
             font-family: 'Courier New', monospace;
             font-size: 1em;
             cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 4px;
+            border-radius: 3px;
+            transition: background-color 0.2s, box-shadow 0.2s;
         }
         
         button:hover {
             background-color: #3a8e3a;
-            box-shadow: 0 0 10px rgba(51, 255, 51, 0.5);
+            box-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
         }
         
         button:active {
@@ -110,24 +110,24 @@
         }
         
         .unit-card {
-            background-color: #3a3a3a;
-            border: 1px solid #4a4a4a;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 4px;
+            background-color: #4a4a4a;
+            border: 1px solid #5a5a5a;
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 3px;
         }
         
         .unit-name {
             font-weight: bold;
             color: #33ff33;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         
         .unit-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 5px;
-            font-size: 0.9em;
+            gap: 4px;
+            font-size: 0.85em;
         }
         
         .stat-label {
@@ -143,13 +143,13 @@
             overflow-y: auto;
             background-color: #1a1a1a;
             border: 1px solid #33ff33;
-            padding: 10px;
+            padding: 8px;
             font-size: 0.85em;
         }
         
         .log-entry {
-            margin-bottom: 5px;
-            padding-left: 10px;
+            margin-bottom: 4px;
+            padding-left: 8px;
             border-left: 2px solid #33ff33;
         }
         
@@ -157,31 +157,25 @@
         .log-entry.success { color: #66ff66; }
         .log-entry.info { color: #ffff66; }
         
-        .radar-sweep {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            animation: radarSweep 3s infinite linear;
-            background: conic-gradient(from 0deg, transparent 0deg, rgba(51, 255, 51, 0.2) 60deg, transparent 60deg);
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
         }
         
-        @keyframes radarSweep {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .sound-toggle {
+            background-color: #4a4a4a !important;
+            font-size: 0.9em;
         }
         
-        .screen-shake {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        /* Subtle animations */
+        .subtle-shake {
+            animation: subtleShake 0.2s ease-in-out;
         }
         
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-2px, 0, 0); }
-            20%, 80% { transform: translate3d(4px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
-            40%, 60% { transform: translate3d(6px, 0, 0); }
+        @keyframes subtleShake {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-3px); }
         }
         
         .flash-overlay {
@@ -191,35 +185,13 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 100;
-            animation: flashFade 0.3s ease-out;
+            z-index: 999;
+            animation: flashFade 0.2s ease-out;
         }
         
         @keyframes flashFade {
-            0% { background-color: rgba(255, 255, 255, 0.8); opacity: 1; }
+            0% { background-color: rgba(51, 255, 51, 0.3); opacity: 1; }
             100% { opacity: 0; }
-        }
-        
-        .damage-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 99;
-            animation: damageFade 0.5s ease-out;
-        }
-        
-        @keyframes damageFade {
-            0% { background-color: rgba(255, 0, 0, 0.4); opacity: 1; }
-            100% { opacity: 0; }
-        }
-        
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
         }
     </style>
 </head>
@@ -229,7 +201,6 @@
     <div class="game-container">
         <div id="canvas-container">
             <canvas id="gameCanvas" width="800" height="640"></canvas>
-            <div class="radar-sweep"></div>
         </div>
         
         <div class="ui-panel">
@@ -260,11 +231,12 @@
             
             <div class="panel-section">
                 <h2>TACTICAL COMMANDS</h2>
+                <button class="sound-toggle" onclick="game.toggleSound()">🔊 SOUND: ON</button>
                 <div class="controls">
                     <button onclick="game.recon()">Recon Plane (3)</button>
                     <button onclick="game.advance()">Advance All Units</button>
                     <button onclick="game.defend()">Defensive Stance</button>
-                    <button onclick="game.airstrike()">Call Airstrike (50 fuel)</button>
+                    <button onclick="game.airstrike()">Airstrike (50 fuel)</button>
                 </div>
             </div>
             
@@ -285,107 +257,88 @@
                 grass: '#2d6e32',
                 forest: '#1a4a20',
                 town: '#b94e48',
-                road: '#5c4033',
-                water: '#1e3c72',
-                gridLine: 'rgba(255, 255, 255, 0.1)'
+                road: '#5c4033'
             }
         };
 
-        // Sound system using Web Audio API
+        // Simple sound system with optional audio
         class SoundSystem {
             constructor() {
-                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                this.masterGain = this.audioContext.createGain();
-                this.masterGain.gain.value = 0.5;
-                this.masterGain.connect(this.audioContext.destination);
+                this.enabled = true;
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.log("Web Audio API not supported");
+                    this.enabled = false;
+                }
+            }
+
+            playTone(freq, type = 'sine', duration = 0.15) {
+                if (!this.enabled || !this.audioContext) return;
+                
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+                
+                gainNode.gain.setValueAtTime(0.15, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + duration);
             }
 
             playExplosion() {
-                if (this.audioContext.state === 'suspended') {
-                    this.audioContext.resume();
-                }
-                
-                const oscillator = this.audioContext.createOscillator();
-                const gainNode = this.audioContext.createGain();
-                
-                oscillator.type = 'sawtooth';
-                oscillator.frequency.setValueAtTime(100, this.audioContext.currentTime);
-                oscillator.frequency.exponentialRampToValueAtTime(10, this.audioContext.currentTime + 0.5);
-                
-                gainNode.gain.setValueAtTime(1, this.audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.5);
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(this.masterGain);
-                
-                oscillator.start();
-                oscillator.stop(this.audioContext.currentTime + 0.5);
+                if (!this.enabled || !this.audioContext) return;
+                // Gentle explosion - low frequency sine wave
+                this.playTone(100, 'sine', 0.3);
             }
 
             playRadio() {
-                if (this.audioContext.state === 'suspended') {
-                    this.audioContext.resume();
-                }
-                
-                const oscillator = this.audioContext.createOscillator();
-                const gainNode = this.audioContext.createGain();
-                
-                oscillator.type = 'square';
-                oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
-                gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(this.masterGain);
-                
-                oscillator.start();
-                oscillator.stop(this.audioContext.currentTime + 0.2);
+                if (!this.enabled || !this.audioContext) return;
+                // Soft beep for radio chatter
+                this.playTone(600, 'triangle', 0.1);
             }
 
             playSelect() {
-                if (this.audioContext.state === 'suspended') {
-                    this.audioContext.resume();
-                }
-                
-                const oscillator = this.audioContext.createOscillator();
-                const gainNode = this.audioContext.createGain();
-                
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(400, this.audioContext.currentTime);
-                gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(this.masterGain);
-                
-                oscillator.start();
-                oscillator.stop(this.audioContext.currentTime + 0.1);
+                if (!this.enabled || !this.audioContext) return;
+                // Pleasant chime
+                this.playTone(400, 'sine', 0.2);
+            }
+            
+            toggle() {
+                this.enabled = !this.enabled;
+                return this.enabled;
             }
         }
 
-        // Particle system for explosions and effects
+        // Particle system for subtle effects
         class Particle {
             constructor(x, y, color) {
                 this.x = x;
                 this.y = y;
                 this.color = color;
-                this.size = Math.random() * 5 + 2;
-                this.speedX = (Math.random() - 0.5) * 10;
-                this.speedY = (Math.random() - 0.5) * 10;
-                this.life = 30;
-                this.maxLife = 30;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = (Math.random() - 0.5) * 4;
+                this.speedY = (Math.random() - 0.5) * 4;
+                this.life = 20;
+                this.maxLife = 20;
             }
 
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
                 this.life--;
-                this.size *= 0.95;
+                this.size *= 0.9;
             }
 
             draw(ctx) {
                 ctx.fillStyle = this.color;
-                ctx.globalAlpha = this.life / this.maxLife;
+                ctx.globalAlpha = Math.min(1, this.life / this.maxLife);
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
@@ -406,26 +359,26 @@
                     this.hp = 30;
                     this.maxHp = 30;
                     this.damage = 5;
-                    this.range = 2;
+                    this.range = 1;
                     this.speed = 1;
-                    this.costFuel = 10;
-                    this.costAmmo = 5;
+                    this.costFuel = 5;
+                    this.costAmmo = 2;
                 } else if (type === 'tank') {
                     this.hp = 60;
                     this.maxHp = 60;
                     this.damage = 12;
-                    this.range = 3;
+                    this.range = 2;
                     this.speed = 2;
-                    this.costFuel = 20;
-                    this.costAmmo = 10;
+                    this.costFuel = 15;
+                    this.costAmmo = 8;
                 } else if (type === 'artillery') {
                     this.hp = 20;
                     this.maxHp = 20;
-                    this.damage = 25;
-                    this.range = 4;
+                    this.damage = 20;
+                    this.range = 3;
                     this.speed = 1;
-                    this.costFuel = 15;
-                    this.costAmmo = 20;
+                    this.costFuel = 10;
+                    this.costAmmo = 15;
                 }
                 
                 this.moved = false;
@@ -454,21 +407,32 @@
                 if (distance <= this.range) {
                     target.hp -= this.damage;
                     
-                    // Add particle effect
+                    // Add subtle particle effect
                     const centerX = this.x * CONFIG.tileSize + CONFIG.tileSize / 2;
                     const centerY = this.y * CONFIG.tileSize + CONFIG.tileSize / 2;
                     game.particles.push(new Particle(centerX, centerY, '#ffcc00'));
                     
                     if (target.hp <= 0) {
-                        // Explosion effect
-                        game.createExplosion(target.x * CONFIG.tileSize + CONFIG.tileSize/2, 
-                                          target.y * CONFIG.tileSize + CONFIG.tileSize/2);
+                        // Gentle explosion effect
+                        for (let i = 0; i < 5; i++) {
+                            game.particles.push(new Particle(
+                                target.x * CONFIG.tileSize + CONFIG.tileSize/2,
+                                target.y * CONFIG.tileSize + CONFIG.tileSize/2,
+                                '#ff6600'
+                            ));
+                        }
                         
                         if (this.owner === 'player') {
-                            game.logMessage(`Unit destroyed an enemy ${target.type}!`, 'success');
-                            game.sound.playExplosion();
+                            game.logMessage(`Enemy ${target.type} destroyed!`, 'success');
                         }
                     } else {
+                        // Subtle screen shake
+                        const container = document.getElementById('canvas-container');
+                        container.classList.add('subtle-shake');
+                        setTimeout(() => {
+                            container.classList.remove('subtle-shake');
+                        }, 200);
+                        
                         game.sound.playRadio();
                     }
                     
@@ -502,10 +466,15 @@
                 this.spawnUnits();
                 this.setupInput();
                 this.loop();
+                
+                // Log welcome message
+                setTimeout(() => {
+                    this.logMessage("Welcome, General. Enemy forces detected in sector.", 'info');
+                    this.logMessage("Select units and command your troops to victory!", 'success');
+                }, 500);
             }
 
             initMap() {
-                // Generate a simple map with terrain types
                 for (let y = 0; y < CONFIG.rows; y++) {
                     const row = [];
                     for (let x = 0; x < CONFIG.cols; x++) {
@@ -523,7 +492,7 @@
                         row.push({
                             x, y,
                             type,
-                            revealed: false // For fog of war
+                            revealed: false
                         });
                     }
                     this.map.push(row);
@@ -578,7 +547,6 @@
             handleTileClick(x, y) {
                 if (x < 0 || x >= CONFIG.cols || y < 0 || y >= CONFIG.rows) return;
 
-                // Check if clicked on a unit
                 const clickedUnit = this.getUnitAt(x, y);
                 
                 if (clickedUnit && clickedUnit.owner === 'player') {
@@ -613,11 +581,10 @@
                 const dx = targetX - this.selectedUnit.x;
                 const dy = targetY - this.selectedUnit.y;
 
-                // Check if it's a valid move (simple distance check)
+                // Check if it's a valid move
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
                 if (distance <= 1.5) { // Adjacent tiles
-                    // Check fuel cost
                     if (this.resources.fuel >= this.selectedUnit.costFuel) {
                         if (this.selectedUnit.move(dx, dy)) {
                             this.resources.fuel -= this.selectedUnit.costFuel;
@@ -635,7 +602,6 @@
                             this.resources.ammo -= this.selectedUnit.costAmmo;
                             this.logMessage(`Attacked enemy!`, 'success');
                             
-                            // Check for win condition
                             if (this.enemies.filter(e => e.hp > 0).length === 0) {
                                 this.gameOver(true);
                             }
@@ -646,33 +612,11 @@
                 }
             }
 
-            createExplosion(x, y) {
-                // Create explosion particles
-                for (let i = 0; i < 20; i++) {
-                    this.particles.push(new Particle(x, y, '#ff6600'));
-                }
-                
-                // Screen shake effect
-                document.body.classList.add('screen-shake');
-                setTimeout(() => {
-                    document.body.classList.remove('screen-shake');
-                }, 500);
-                
-                // Damage overlay flash
-                const flash = document.createElement('div');
-                flash.className = 'damage-overlay';
-                document.body.appendChild(flash);
-                setTimeout(() => {
-                    flash.remove();
-                }, 500);
-            }
-
             recon() {
                 if (this.resources.intel > 0) {
                     this.resources.intel--;
                     this.reconActive = true;
                     
-                    // Reveal entire map temporarily
                     for (let y = 0; y < CONFIG.rows; y++) {
                         for (let x = 0; x < CONFIG.cols; x++) {
                             this.map[y][x].revealed = true;
@@ -683,12 +627,10 @@
                     this.sound.playRadio();
                     this.updateUI();
                     
-                    // Hide map again after 5 seconds
                     setTimeout(() => {
                         this.reconActive = false;
                         for (let y = 0; y < CONFIG.rows; y++) {
                             for (let x = 0; x < CONFIG.cols; x++) {
-                                // Only reveal tiles near player units
                                 let revealedNearPlayer = false;
                                 for (const unit of this.units) {
                                     const dist = Math.sqrt(Math.pow(unit.x - x, 2) + Math.pow(unit.y - y, 2));
@@ -700,14 +642,13 @@
                                 this.map[y][x].revealed = revealedNearPlayer;
                             }
                         }
-                    }, 5000);
+                    }, 4000);
                 } else {
                     this.logMessage("No reconnaissance planes available!", 'danger');
                 }
             }
 
             advance() {
-                // Move all units forward
                 let movedCount = 0;
                 
                 for (const unit of this.units) {
@@ -723,7 +664,7 @@
                 }
                 
                 if (movedCount > 0) {
-                    this.logMessage(`All units advanced!`, 'success');
+                    this.logMessage("All units advanced!", 'success');
                     this.sound.playRadio();
                     this.updateUI();
                 } else {
@@ -732,7 +673,6 @@
             }
 
             defend() {
-                // Set all units to defensive stance (recover HP)
                 for (const unit of this.units) {
                     if (!unit.moved && unit.hp < unit.maxHp) {
                         unit.hp = Math.min(unit.hp + 10, unit.maxHp);
@@ -748,14 +688,19 @@
                 if (this.resources.fuel >= 50) {
                     this.resources.fuel -= 50;
                     
-                    // Hit random enemy units
                     const activeEnemies = this.enemies.filter(e => e.hp > 0);
                     if (activeEnemies.length > 0) {
                         const target = activeEnemies[Math.floor(Math.random() * activeEnemies.length)];
                         target.hp -= 20;
                         
-                        this.createExplosion(target.x * CONFIG.tileSize + CONFIG.tileSize/2, 
-                                           target.y * CONFIG.tileSize + CONFIG.tileSize/2);
+                        // Subtle particle effect
+                        for (let i = 0; i < 5; i++) {
+                            this.particles.push(new Particle(
+                                target.x * CONFIG.tileSize + CONFIG.tileSize/2,
+                                target.y * CONFIG.tileSize + CONFIG.tileSize/2,
+                                '#ffcc00'
+                            ));
+                        }
                         
                         this.logMessage("Airstrike delivered! Enemy unit hit.", 'success');
                         this.sound.playExplosion();
@@ -773,17 +718,22 @@
                 }
             }
 
+            toggleSound() {
+                const enabled = this.sound.toggle();
+                document.querySelector('.sound-toggle').textContent = 
+                    enabled ? '🔊 SOUND: ON' : '🔇 SOUND: OFF';
+            }
+
             updateUnits() {
-                // Reset movement status at start of turn
+                // Reset movement status
                 for (const unit of this.units) {
                     unit.moved = false;
                 }
                 
-                // Enemy AI - move towards player and attack
+                // Enemy AI - simple movement
                 for (const enemy of this.enemies) {
                     if (enemy.hp <= 0) continue;
                     
-                    // Find closest player unit
                     let closestPlayerUnit = null;
                     let minDistance = Infinity;
                     
@@ -795,33 +745,24 @@
                         }
                     }
                     
-                    // Simple AI: move towards player or attack
                     if (closestPlayerUnit && minDistance <= enemy.range) {
-                        // Attack if in range
                         closestPlayerUnit.hp -= enemy.damage;
                         
-                        this.createExplosion(closestPlayerUnit.x * CONFIG.tileSize + CONFIG.tileSize/2,
-                                           closestPlayerUnit.y * CONFIG.tileSize + CONFIG.tileSize/2);
+                        const container = document.getElementById('canvas-container');
+                        container.classList.add('subtle-shake');
+                        setTimeout(() => {
+                            container.classList.remove('subtle-shake');
+                        }, 200);
                         
                         this.logMessage(`Enemy ${enemy.type} attacks!`, 'danger');
                         this.sound.playExplosion();
-                        
-                        // Damage overlay for player damage
-                        const flash = document.createElement('div');
-                        flash.className = 'damage-overlay';
-                        document.body.appendChild(flash);
-                        setTimeout(() => {
-                            flash.remove();
-                        }, 500);
                     } else if (closestPlayerUnit) {
-                        // Move towards player
                         const dx = Math.sign(closestPlayerUnit.x - enemy.x);
                         const dy = Math.sign(closestPlayerUnit.y - enemy.y);
                         
                         let newX = enemy.x + dx;
                         let newY = enemy.y + dy;
                         
-                        // Check boundaries and obstacles
                         if (newX >= 0 && newX < CONFIG.cols && newY >= 0 && newY < CONFIG.rows) {
                             enemy.x = newX;
                             enemy.y = newY;
@@ -829,21 +770,17 @@
                     }
                 }
                 
-                // Check win/loss conditions
+                // Check win/loss
                 const remainingPlayerUnits = this.units.filter(u => u.hp > 0);
-                const remainingEnemyUnits = this.enemies.filter(e => e.hp > 0);
-                
                 if (remainingPlayerUnits.length === 0) {
                     this.gameOver(false);
                 }
             }
 
             gameOver(playerWon) {
-                // Clear the canvas
                 this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
                 
-                // Draw game over message
                 this.ctx.font = '48px "Courier New"';
                 this.ctx.textAlign = 'center';
                 
@@ -863,7 +800,6 @@
                     this.ctx.fillText('All units compromised. Retreat immediately!', this.canvas.width / 2, this.canvas.height / 2 + 50);
                 }
                 
-                // Restart button
                 setTimeout(() => {
                     const restartBtn = document.createElement('button');
                     restartBtn.textContent = 'RESTART MISSION';
@@ -887,13 +823,11 @@
             }
 
             updateUI() {
-                // Update resource displays
                 document.getElementById('fuelDisplay').textContent = this.resources.fuel;
                 document.getElementById('ammoDisplay').textContent = this.resources.ammo;
                 document.getElementById('intelDisplay').textContent = this.resources.intel;
                 document.getElementById('civilianDisplay').textContent = `${this.civilianTrust}%`;
                 
-                // Update units display
                 const unitsContainer = document.getElementById('unitsContainer');
                 unitsContainer.innerHTML = '';
                 
@@ -944,7 +878,6 @@
                     for (let x = 0; x < CONFIG.cols; x++) {
                         const tile = this.map[y][x];
                         
-                        // Only draw revealed tiles or during recon
                         if (!tile.revealed && !this.reconActive) continue;
                         
                         let color;
@@ -959,18 +892,16 @@
                         this.ctx.fillStyle = color;
                         this.ctx.fillRect(x * CONFIG.tileSize, y * CONFIG.tileSize, CONFIG.tileSize, CONFIG.tileSize);
                         
-                        // Draw grid lines
-                        this.ctx.strokeStyle = CONFIG.colors.gridLine;
+                        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
                         this.ctx.strokeRect(x * CONFIG.tileSize, y * CONFIG.tileSize, CONFIG.tileSize, CONFIG.tileSize);
                         
-                        // Add some terrain details
+                        // Add terrain details
                         if (tile.type === 'forest') {
                             this.ctx.fillStyle = '#153a18';
                             this.ctx.fillRect(x * CONFIG.tileSize + 10, y * CONFIG.tileSize + 10, 44, 44);
                         } else if (tile.type === 'town') {
                             this.ctx.fillStyle = '#9e423c';
                             this.ctx.fillRect(x * CONFIG.tileSize + 8, y * CONFIG.tileSize + 8, 48, 48);
-                            // Windows
                             this.ctx.fillStyle = '#ffffcc';
                             this.ctx.fillRect(x * CONFIG.tileSize + 15, y * CONFIG.tileSize + 15, 10, 10);
                         }
@@ -979,14 +910,12 @@
             }
 
             drawUnits() {
-                // Draw player units
                 for (const unit of this.units) {
                     if (unit.hp <= 0) continue;
                     
                     const centerX = unit.x * CONFIG.tileSize + CONFIG.tileSize / 2;
                     const centerY = unit.y * CONFIG.tileSize + CONFIG.tileSize / 2;
                     
-                    // Draw unit base
                     this.ctx.fillStyle = '#3366ff';
                     if (unit.type === 'tank') {
                         this.ctx.fillRect(unit.x * CONFIG.tileSize + 15, unit.y * CONFIG.tileSize + 15, 34, 34);
@@ -995,13 +924,11 @@
                         this.ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
                         this.ctx.fill();
                     } else {
-                        // Infantry
                         this.ctx.beginPath();
                         this.ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
                         this.ctx.fill();
                     }
                     
-                    // Selection indicator
                     if (this.selectedUnit === unit) {
                         this.ctx.strokeStyle = '#33ff33';
                         this.ctx.lineWidth = 2;
@@ -1009,7 +936,6 @@
                                           CONFIG.tileSize + 10, CONFIG.tileSize + 10);
                     }
                     
-                    // Health bar
                     const hpPercent = unit.hp / unit.maxHp;
                     this.ctx.fillStyle = '#ff3333';
                     this.ctx.fillRect(unit.x * CONFIG.tileSize + 5, unit.y * CONFIG.tileSize - 8, 
@@ -1020,11 +946,9 @@
                                     (CONFIG.tileSize - 10) * hpPercent, 4);
                 }
                 
-                // Draw enemy units
                 for (const enemy of this.enemies) {
                     if (enemy.hp <= 0) continue;
                     
-                    // Only draw enemies that are revealed (near player units or during recon)
                     let shouldDraw = this.reconActive;
                     
                     for (const unit of this.units) {
@@ -1040,7 +964,6 @@
                     const centerX = enemy.x * CONFIG.tileSize + CONFIG.tileSize / 2;
                     const centerY = enemy.y * CONFIG.tileSize + CONFIG.tileSize / 2;
                     
-                    // Draw enemy unit
                     this.ctx.fillStyle = '#ff3333';
                     if (enemy.type === 'tank') {
                         this.ctx.fillRect(enemy.x * CONFIG.tileSize + 15, enemy.y * CONFIG.tileSize + 15, 34, 34);
@@ -1049,13 +972,11 @@
                         this.ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
                         this.ctx.fill();
                     } else {
-                        // Infantry
                         this.ctx.beginPath();
                         this.ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
                         this.ctx.fill();
                     }
                     
-                    // Health bar
                     const hpPercent = enemy.hp / enemy.maxHp;
                     this.ctx.fillStyle = '#ff3333';
                     this.ctx.fillRect(enemy.x * CONFIG.tileSize + 5, enemy.y * CONFIG.tileSize - 8, 
@@ -1073,36 +994,25 @@
                     particle.draw(this.ctx);
                 }
                 
-                // Remove dead particles
                 this.particles = this.particles.filter(p => p.life > 0);
             }
 
             loop() {
-                // Clear canvas
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 
-                // Draw map and units
                 this.drawMap();
                 this.drawUnits();
-                
-                // Draw particles
                 this.drawParticles();
                 
-                // Update game logic
                 this.updateUnits();
-                
-                // Update UI
                 this.updateUI();
                 
                 requestAnimationFrame(() => this.loop());
             }
         }
 
-        // Start the game when page loads
         window.onload = () => {
             window.game = new Game();
-            game.logMessage("Welcome, General. Enemy forces detected in sector.", 'info');
-            game.logMessage("Select units and command your troops to victory!", 'success');
         };
     </script>
 </body>
