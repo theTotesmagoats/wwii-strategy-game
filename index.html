@@ -3,168 +3,421 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRESIDENTIAL TERMINAL - SYSTEM MILTON v2.1</title>
+    <title>PRESIDENTIAL TERMINAL - SYSTEM MILTON v3.1</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
         
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
         
         body {
-            background: #0d1b0a;
+            background: #1a1a1a;
             font-family: 'Courier Prime', monospace;
-            overflow: hidden;
-            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
         
-        .monitor {
-            width: 95vw;
+        .crt-monitor {
+            width: 98vw;
+            max-width: 1400px;
             height: 95vh;
-            background: #0d1b0a;
-            border-radius: 3px;
+            max-height: 900px;
+            background: linear-gradient(145deg, #2a2a2a, #1f1f1f);
+            border-radius: 35px;
+            padding: 35px 35px 70px 35px;
             position: relative;
-            overflow: hidden;
             box-shadow: 
-                0 0 40px rgba(0,255,0,0.2),
-                inset 0 0 60px rgba(0,0,0,0.7);
+                0 0 0 8px #4a4a4a,
+                0 0 0 15px #2a2a2a,
+                0 0 0 20px #3d3d3d,
+                0 25px 60px rgba(0,0,0,0.7),
+                inset -10px -10px 40px rgba(0,0,0,0.8);
+        }
+        
+        .crt-monitor::before {
+            content: '';
+            position: absolute;
+            top: -35px; left: -35px; right: -35px; bottom: 15px;
+            background: #6b5d4f;
+            border-radius: 20px;
+            padding: 8px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+        }
+        
+        .screen {
+            background: #1a1a1a;
+            border-radius: 5px;
+            overflow: hidden;
+            height: calc(100% - 40px);
+            position: relative;
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
+        }
+        
+        .screen-content {
+            padding: 25px 30px 140px 30px; /* Bottom padding for cmd-line */
+            height: calc(100% - 40px);
+            overflow-y: auto;
+            color: #4af626;
         }
         
         .scanlines {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: repeating-linear-gradient(
-                to bottom,
-                transparent 0%,
-                rgba(0, 255, 0, 0.03) 50%,
-                transparent 100%
-            );
+            background: 
+                linear-gradient(to bottom, transparent 50%, rgba(74,246,38,0.03) 51%),
+                repeating-linear-gradient(
+                    to bottom,
+                    transparent 0%,
+                    transparent 2px,
+                    rgba(74,246,38,0.02) 2px,
+                    rgba(74,246,38,0.02) 4px
+                );
             pointer-events: none;
             z-index: 10;
         }
         
-        .phosphor {
+        .phosphor-glow {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(ellipse at center, transparent 60%, rgba(0,50,0,0.4) 100%);
+            background: radial-gradient(ellipse at center, rgba(74,246,38,0.1) 0%, transparent 70%);
             pointer-events: none;
             z-index: 9;
         }
         
-        .screen {
-            padding: 25px 30px;
-            height: calc(100% - 60px);
-            overflow: hidden;
-            color: #4af626;
-            text-shadow:
-                0 0 5px rgba(74,246,38,0.6),
-                0 0 10px rgba(74,246,38,0.3);
+        .flicker {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(74,246,38,0.01);
+            animation: flicker 0.15s infinite;
+            pointer-events: none;
+            z-index: 8;
+        }
+        
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            50% { opacity: 1; }
+            100% { opacity: 0.98; }
         }
         
         .header {
-            font-size: 14px;
-            margin-bottom: 15px;
+            font-size: 13px;
+            margin-bottom: 12px;
             border-bottom: 2px solid #4af626;
-            padding-bottom: 10px;
+            padding-bottom: 8px;
             display: flex;
             justify-content: space-between;
+            text-shadow: 0 0 5px rgba(74,246,38,0.5);
         }
         
-        .status-line { font-size: 12px; margin-bottom: 8px; color: #4af626; opacity: 0.9; }
+        .status-line { 
+            font-size: 11px; 
+            margin-bottom: 6px; 
+            color: #4af626; 
+            opacity: 0.9;
+            text-shadow: 0 0 3px rgba(74,246,38,0.5);
+        }
         
         .message-area {
             flex-grow: 1;
             overflow-y: auto;
             position: relative;
+            margin-bottom: 0;
+            max-height: calc(100% - 250px); /* Space for dashboard + cmd-line */
         }
         
-        .message-area::-webkit-scrollbar { width: 8px; }
-        .message-area::-webkit-scrollbar-thumb { background: rgba(74,246,38,0.3); }
+        .message-area::-webkit-scrollbar { width: 6px; }
+        .message-area::-webkit-scrollbar-thumb { 
+            background: rgba(74,246,38,0.3); 
+            border-radius: 3px;
+        }
         
-        .msg { margin-bottom: 12px; line-height: 1.5; white-space: pre-wrap; }
-        .msg.system { color: #4af626; }
-        .msg.president { color: #ffcc00; }
+        .msg { margin-bottom: 10px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+        .msg.system { color: #4af626; text-shadow: 0 0 8px rgba(74,246,38,0.6); }
+        .msg.president { color: #ffcc00; text-shadow: 0 0 5px rgba(255,204,0,0.4); }
         .msg.warning { 
-            color: #ff6b35; 
-            text-shadow: 0 0 5px rgba(255,107,53,0.6), 0 0 10px rgba(255,107,53,0.3);
+            color: #ff9f43; 
+            text-shadow: 0 0 8px rgba(255,159,67,0.6);
         }
         .msg.danger { 
-            color: #ff4757; 
-            text-shadow: 0 0 5px rgba(255,71,87,0.6), 0 0 10px rgba(255,71,87,0.3);
+            color: #ff6b6b; 
+            text-shadow: 0 0 8px rgba(255,107,107,0.6);
         }
-        .msg.success { color: #4af626; }
+        .msg.success { 
+            color: #4af626; 
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(74,246,38,0.8);
+        }
         
-        .cmd-line { margin-top: 10px; font-size: 14px; display: flex; align-items: center; }
-        .prompt { color: #ffcc00; margin-right: 8px; }
+        /* Dashboard positioning */
+        .dashboard-wrapper {
+            position: absolute;
+            top: 50px;
+            right: 25px;
+            width: 300px;
+        }
+        
+        .dashboard {
+            background: rgba(26,26,26,0.95);
+            border: 1px solid #4af626;
+            padding: 15px; 
+            font-size: 11px;
+            border-radius: 8px;
+        }
+        
+        .dash-header { 
+            font-size: 12px; font-weight: bold; margin-bottom: 10px; color:#4af626; text-shadow: 0 0 5px rgba(74,246,38,0.6);
+        }
+        
+        .dash-row { display: flex; justify-content: space-between; margin-bottom: 5px; padding: 4px 8px; border-radius: 3px; transition: background 0.3s; }
+        .dash-row:hover { background: rgba(74,246,38,0.1); }
+        
+        .dash-label { color: #4af626; opacity: 0.9; text-shadow: 0 0 3px rgba(74,246,38,0.5); }
+        .dash-value { color: #ffcc00; text-shadow: 0 0 5px rgba(255,204,0,0.5); }
+        
+        /* Turn indicator */
+        .turn-indicator { 
+            position: absolute; bottom: 100px; left: 35px; font-size: 10px; opacity: 0.7; text-shadow: 0 0 3px rgba(74,246,38,0.5);
+        }
+        
+        /* Help text */
+        .help-text { 
+            position: absolute; bottom: 90px; right: 35px; font-size: 9px; color: #4af626; opacity: 0.5; text-align: right; text-shadow: 0 0 2px rgba(74,246,38,0.3);
+        }
+        
+        /* Command line */
+        .cmd-line {
+            position: absolute;
+            bottom: 10px;
+            left: 35px;
+            right: 35px;
+            display: flex;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px dashed #4af626;
+        }
+        
+        .prompt { 
+            color: #ffcc00; 
+            margin-right: 8px;
+            text-shadow: 0 0 3px rgba(255,204,0,0.5);
+            white-space: nowrap;
+        }
         
         input[type="text"] {
             background: transparent;
             border: none;
             color: #4af626;
             font-family: 'Courier Prime', monospace;
-            font-size: 14px;
-            width: calc(100% - 80px);
+            font-size: 13px;
+            flex-grow: 1;
             outline: none;
-            text-shadow: 0 0 5px rgba(74,246,38,0.6), 0 0 10px rgba(74,246,38,0.3);
+            text-shadow: 0 0 8px rgba(74,246,38,0.6);
         }
         
-        .typing-cursor { display: inline-block; width: 10px; height: 18px; background: #4af626; animation: blink 1s infinite; vertical-align: middle; }
-        
-        @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
-        
-        .dashboard {
-            position: absolute; top: 60px; right: 20px;
-            width: 280px; background: rgba(13,27,10,0.9);
-            border: 1px solid #4af626; padding: 15px; font-size: 11px;
+        input[type="text"]:focus {
+            background: rgba(74,246,38,0.05);
+            border-radius: 3px;
+            padding: 2px 5px;
         }
         
-        .dash-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-        .dash-label { color: #4af626; opacity: 0.8; }
-        .dash-value { color: #ffcc00; }
+        .typing-cursor { display: inline-block; width: 8px; height: 16px; background: #4af626; animation: blink 0.8s infinite; vertical-align: middle; margin-left: 5px; }
         
-        .turn-indicator { position: absolute; bottom: 5px; left: 20px; font-size: 11px; opacity: 0.7; }
-        .help-text { position: absolute; bottom: 30px; right: 20px; font-size: 10px; color: #4af626; opacity: 0.5; text-align: right; }
+        @keyframes blink { 
+            0%, 50% { opacity: 1; } 
+            51%, 100% { opacity: 0; } 
+        }
+        
+        /* Power button */
+        .power-btn {
+            position: absolute; bottom: -45px; left: 50%; transform: translateX(-50%);
+            width: 70px; height: 70px; 
+            background: linear-gradient(145deg, #3d3d3d, #2a2a2a);
+            border-radius: 50%; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.1);
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 200; 
+            border: 3px solid #1a1a1a;
+            transition: all 0.2s ease;
+        }
+        
+        .power-btn:hover { 
+            background: linear-gradient(145deg, #4a4a4a, #3d3d3d);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6), inset 0 2px 8px rgba(255,255,255,0.15);
+        }
+        
+        .power-btn:active { 
+            transform: translateX(-50%) scale(0.95);
+        }
+        
+        .power-icon { font-size: 32px; color: #ffcc00; text-shadow: 0 0 10px rgba(255,204,0,0.6); }
+        
+        /* Boot overlay */
+        .boot-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: #1a1a1a; z-index: 300; display: none;
+        }
+        
+        /* Tutorial box */
+        .tutorial-box {
+            background: rgba(74,246,38,0.1);
+            border-left: 3px solid #4af626;
+            padding: 15px; margin-bottom: 20px; text-shadow: none; border-radius: 3px 0 0 3px;
+        }
+        
+        .tutorial-box h3 { color: #ffcc00; margin-bottom: 8px; font-size: 14px; text-shadow: 0 0 5px rgba(255,204,0,0.6); }
+        .tutorial-box p { font-size: 11px; line-height: 1.6; margin: 5px 0; color: #e8f5c9; }
+        
+        .command-list { 
+            background: rgba(74,246,38,0.05); padding: 12px; border-radius: 4px; font-size: 10px; margin-top: 10px;
+        }
+        
+        .command-list h4 { color: #ffcc00; margin-bottom: 8px; text-shadow: 0 0 3px rgba(255,204,0,0.6); font-size: 11px;}
+        .command-list code { 
+            display: block; background: rgba(74,246,38,0.15); padding: 4px 8px; margin: 4px 0; border-radius: 3px; text-shadow: none; color: #aaffaa;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-wrapper { 
+                position: static; width: auto; margin-bottom: 20px; right: auto; top: auto;
+            }
+            .turn-indicator, .help-text { display: none; }
+        }
     </style>
 </head>
 <body>
-    <div class="monitor">
-        <div class="scanlines"></div>
-        <div class="phosphor"></div>
+    <div class="crt-monitor">
+        <div class="power-btn" id="powerBtn" onclick="startSystem()">
+            <span class="power-icon">⏻</span>
+        </div>
         
-        <div class="screen" onclick="document.getElementById('cmd').focus()">
-            <div class="header">
-                <span>PRESIDENTIAL TERMINAL // SYSTEM MILTON v2.1</span>
-                <span>DATE: Q<span id="qtr">1</span>/2026</span>
-            </div>
+        <div class="screen">
+            <div class="scanlines"></div>
+            <div class="phosphor-glow"></div>
+            <div class="flicker"></div>
             
-            <div class="status-line" id="statusLine">CONNECTED TO WHITEHOUSE SECURE TERMINAL [ENCRYPTED]</div>
+            <div class="boot-overlay" id="bootOverlay"></div>
             
-            <div class="message-area" id="msgArea"></div>
-            
-            <div class="turn-indicator" id="turnIndicator">TURN: 1/8</div>
-            
-            <div class="dashboard" id="dashboard"></div>
-            
-            <div class="help-text" id="helpText">TYPE COMMANDS BELOW | PRESS ENTER TO SUBMIT</div>
-            
-            <div class="cmd-line">
-                <span class="prompt">POTUS@WHITEHOUSE:~$</span>
-                <input type="text" id="cmd" placeholder="Enter command..." autofocus autocomplete="off">
+            <div class="screen-content" onclick="focusInput()">
+                <div class="header">
+                    <span>PRESIDENTIAL TERMINAL // SYSTEM MILTON v3.1</span>
+                    <span id="dateDisplay">DATE: Q1/2026</span>
+                </div>
+                
+                <div class="status-line" id="statusLine">SYSTEM STANDBY - PRESS POWER BUTTON TO START</div>
+                
+                <div class="message-area" id="msgArea"></div>
+                
+                <div class="dashboard-wrapper">
+                    <div class="dashboard" id="dashboard"></div>
+                </div>
+                
+                <div class="turn-indicator" id="turnIndicator"></div>
+                
+                <div class="help-text" id="helpText">TYPE COMMANDS | PRESS ENTER TO SUBMIT</div>
+                
+                <div class="cmd-line">
+                    <span class="prompt">POTUS@WHITEHOUSE:~$</span>
+                    <input type="text" id="cmd" placeholder="Enter command..." disabled autocomplete="off">
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Game State
         const state = {
             turn: 1, maxTurns: 8, gdp: 4.2, unemployment: 3.8, inflation: 2.1,
-            approval: 58, fedCredibility: 72, transparency: 60, oilPrice: 75, typingSpeed: 25
+            approval: 58, fedCredibility: 72, transparency: 60, oilPrice: 75, 
+            typingSpeed: 30, systemOn: false
         };
 
         const msgArea = document.getElementById('msgArea');
         const cmdInput = document.getElementById('cmd');
         const dashboard = document.getElementById('dashboard');
+        const statusLine = document.getElementById('statusLine');
         
+        // Focus input helper
+        function focusInput() {
+            if (state.systemOn) {
+                cmdInput.focus();
+            }
+        }
+
+        async function bootSequence() {
+            state.typingSpeed = 25; // Slower at boot
+            
+            const messages = [
+                'SYSTEM MILTON v3.1 BOOT SEQUENCE INITIATED',
+                '',
+                'CHECKING MEMORY... 64KB OK',
+                'LOADING KERNEL... OK', 
+                'VERIFYING SECURE CONNECTION... ENCRYPTED',
+                'INITIALIZING ECONOMIC MODULES...',
+                'CALIBRATING DASHBOARD PARAMETERS...',
+                'ESTABLISHING FED CREDIBILITY INTERFACE...',
+                '',
+                'SYSTEM READY.'
+            ];
+            
+            for (let msg of messages) {
+                if (!state.systemOn) break;
+                await addMessage(msg, 'system');
+            }
+        }
+
+        async function startSystem() {
+            const powerBtn = document.getElementById('powerBtn');
+            if (state.systemOn || !powerBtn) return;
+            
+            state.systemOn = true;
+            statusLine.textContent = 'CONNECTED TO WHITEHOUSE SECURE TERMINAL [ENCRYPTED]';
+            
+            // Disable power button temporarily
+            powerBtn.style.opacity = '0.5';
+            powerBtn.style.pointerEvents = 'none';
+            
+            await bootSequence();
+            
+            const tutorialMsg = `
+====================================================
+        TUTORIAL - HOW TO USE THIS SYSTEM
+====================================================
+
+YOU ARE THE PRESIDENT. I AM MILTON, 
+YOUR ECONOMIC ADVISORY SYSTEM BASED ON PRINCIPLES 
+OF MARKET INCENTIVES AND INSTITUTIONAL ANALYSIS.
+
+EACH COMMAND YOU ENTER REPRESENTS A POLICY DECISION.
+EVERY DECISION HAS TRADE-OFFS: SHORT-TERM GAINS OFTEN
+COME WITH LONG-TERM COSTS.
+
+WATCH YOUR DASHBOARD - IT TRACKS THE CONSEQUENCES 
+OF YOUR CHOICES IN REAL-TIME.
+
+KEY METRICS:
+  • GDP GROWTH = Economic expansion (lower is bad)
+  • UNEMPLOYMENT = Jobs lost (higher is bad)  
+  • INFLATION = Price increases (above 3% hurts voters)
+  • APPROVAL = Public satisfaction (below 40% = election loss)
+  • FED CREDIBILITY = Central bank trust (below 40% = crisis!)
+
+COMMANDS AVAILABLE:
+${Object.keys(commandEffects).join(', ').toUpperCase()}
+
+TYPE ANY COMMAND AND PRESS ENTER TO EXECUTE.
+
+READY TO BEGIN YOUR PRESIDENCY?
+====================================================`;
+            
+            await addMessage(tutorialMsg, 'system');
+        }
+
         function miltonSpeak(text, type = 'system') {
             return new Promise(resolve => {
                 addMessage(text, type);
@@ -173,140 +426,300 @@
         }
 
         async function addMessage(text, type = 'system') {
+            if (!state.systemOn) return;
+            
             const msgDiv = document.createElement('div');
             msgDiv.className = `msg ${type}`;
             msgArea.insertBefore(msgDiv, msgArea.firstChild);
             
-            while (msgArea.children.length > 12) {
-                msgArea.removeChild(msgArea.lastChild);
+            // Clear old messages (keep last ~15)
+            while (msgArea.children.length > 17) {
+                if (msgArea.lastChild && !cmdInput.parentNode.contains(msgArea.lastChild)) {
+                    msgArea.removeChild(msgArea.lastChild);
+                } else break;
             }
             
+            // Type out message letter by letter at vintage speed
             let i = 0;
             const typeInterval = setInterval(() => {
+                if (!state.systemOn) { 
+                    clearInterval(typeInterval); 
+                    return; 
+                }
+                
                 msgDiv.textContent += text.charAt(i);
                 i++;
-                if (i >= text.length) clearInterval(typeInterval);
+                
+                if (i >= text.length || !state.systemOn) {
+                    clearInterval(typeInterval);
+                }
             }, 1000 / state.typingSpeed);
         }
 
         function buildDashboard() {
-            const gdpColor = state.gdp < 1.5 ? '#ff4757' : state.gdp > 3.0 ? '#4af626' : '#ffcc00';
-            const unempColor = state.unemployment > 5.0 ? '#ff4757' : state.unemployment < 3.5 ? '#ffcc00' : '#4af626';
-            const infColor = state.inflation > 3.0 ? '#ff4757' : state.inflation < 1.5 ? '#4af626' : '#ffcc00';
+            const gdpColor = state.gdp < 1.5 ? '#ff6b6b' : state.gdp > 3.0 ? '#4af626' : '#ffcc00';
+            const unempColor = state.unemployment > 5.0 ? '#ff6b6b' : state.unemployment < 3.5 ? '#ffcc00' : '#4af626';
+            const infColor = state.inflation > 3.0 ? '#ff6b6b' : state.inflation < 1.5 ? '#4af626' : '#ffcc00';
             
             dashboard.innerHTML = `
-                <div style="font-size:11px; font-weight:bold; margin-bottom:8px; color:#4af626;">ECONOMIC DASHBOARD</div>
+                <div class="dash-header">ECONOMIC DASHBOARD</div>
                 <div class="dash-row"><span class="dash-label">GDP GROWTH:</span><span class="dash-value" style="color:${gdpColor}">${state.gdp.toFixed(1)}%</span></div>
                 <div class="dash-row"><span class="dash-label">UNEMPLOYMENT:</span><span class="dash-value" style="color:${unempColor}">${state.unemployment.toFixed(1)}%</span></div>
                 <div class="dash-row"><span class="dash-label">INFLATION (PCE):</span><span class="dash-value" style="color:${infColor}">${state.inflation.toFixed(1)}%</span></div>
-                <div class="dash-row"><span class="dash-label">APPROVAL:</span><span class="dash-value" style="color:#ffcc00">${Math.round(state.approval)}%</span></div>
+                <div class="dash-row"><span class="dash-label">APPROVAL RATING:</span><span class="dash-value" style="color:#ffcc00">${Math.round(state.approval)}%</span></div>
                 <div class="dash-row"><span class="dash-label">FED CREDIBILITY:</span><span class="dash-value">${Math.round(state.fedCredibility)}%</span></div>
-                <div class="dash-row" style="margin-top:8px; border-top:1px solid #4af626; padding-top:5px;"><span class="dash-label">OIL PRICE:</span><span class="dash-value">$${state.oilPrice.toFixed(0)}/bbl</span></div>
+                <div class="dash-row" style="margin-top:6px; border-top:1px solid #4af626; padding-top:5px;"><span class="dash-label">OIL PRICE:</span><span class="dash-value">$${state.oilPrice.toFixed(0)}/bbl</span></div>
+                <div style="margin-top:8px; font-size:10px; color:#4af626; opacity:0.7;">TURN: ${state.turn}/${state.maxTurns}</div>
             `;
         }
 
+        const commandEffects = {
+            'cut_rates': { msg: 'INTEREST RATES CUT BY 0.25%', gdp: 0.35, approval: 2, inflation: 0.28 },
+            'increase_spending': { msg: 'INFRASTRUCTURE SPENDING +$50B', gdp: 0.4, unemployment: -0.12, inflation: 0.6 },
+            'more_spending': { msg: 'MORE INFRASTRUCTURE SPENDING', gdp: 0.5, unemployment: -0.15, inflation: 0.7 },
+            'massive_spending': { msg: 'MASSIVE PRE-ELECTION STIMULUS PACKAGE', gdp: 0.7, unemployment: -0.2, inflation: 0.9 },
+            'suppress_wages': { msg: 'WAGE GROWTH RESTRAINED', inflation: -0.35, unemployment: 0.4 },
+            'wage_control': { msg: 'EXECUTIVE WAGE CAPS ENFORCED', inflation: -0.4, unemployment: 0.5, approval: -2 },
+            'tariffs': { msg: 'NEW TARIFFS ON CHINA/EU IMPORTED GOODS', inflation: 0.5, gdp: -0.3, oilPrice: (state.turn > 4 ? 8 : 4) },
+            'escalate_trade_war': { msg: 'FULL TRADE WAR WITH MULTIPLE NATIONS', inflation: 0.7, gdp: -0.5, oilPrice: 12 },
+            'pressure_fed': { msg: 'FED PRESSURED TO CUT RATES IMMEDIATELY', approval: 3.2, fedCredibility: -9.5 },
+            'fed_intervention': { msg: 'DIRECT FEDERAL INTERVENTION INDEPENDENCE ENDANGERED', approval: 4, fedCredibility: -15 },
+            'cut_spending': { msg: 'GOVERNMENT SPENDING REDUCED TO COOL DEFICIT', inflation: -0.4, gdp: -0.3 },
+            'do_nothing': { msg: Math.random() > 0.5 ? `OIL PRICES JUMPED NATURALLY TO $${75 + (state.turn * 2)}/bbl` : 'ECONOMY STABILIZED WITHOUT INTERVENTION', transparency: 3 },
+            'price_controls': { msg: 'COMPREHENSIVE PRICE CONTROLS IMPOSED', inflation: -0.6, gdp: -0.8 },
+            'suppress_all_prices': { msg: 'ALL PRICES CONTROLLED BY EXECUTIVE ORDER', inflation: -0.7, gdp: -1.0 },
+            'blame_foreigners': { msg: 'DEFLECTION NARRATIVE ESTABLISHED - BLAME FOREIGNERS', approval: 2.5 },
+            'blame_predecessor': { msg: 'PREDECESSOR ADMINISTRATION BLAMED FOR ALL PROBLEMS', approval: 1.8 },
+            're_election_campaign': { msg: 'RE-ELECTION CAMPAIGN SPENDING INCREASED', gdp: 0.3, inflation: 0.5 },
+            'last_ditch_spending': { msg: 'LAST DITCH ECONOMIC STIMULUS PACKAGE', gdp: 0.4, inflation: 0.6 },
+            'policy_correction': { msg: 'INSTITUTIONAL CREDIBILITY RESTORED - VOTERS UNHAPPY NOW', fedCredibility: 12, approval: -8 },
+            'admit_errors': { msg: 'ERRORS ADMITTED PUBLICLY - SHORT TERM PAIN FOR LONG TERM GAIN', fedCredibility: 10, approval: -6 },
+            'federal_independence': { msg: 'FEDERAL INDEPENDENCE DECLARED - INSTITUTIONAL REFORM', fedCredibility: 10, approval: -3 },
+            'trust_voters': { msg: 'VOTERS TRUSTED TO MAKE ECONOMIC DECISIONS', transparency: 5 }
+        };
+
         const miltonResponses = {
-            intro: '\nSYSTEM MILTON INITIALIZING...\n\nWELCOME PRESIDENT TRUMP.\nI AM MILTON - YOUR ECONOMIC ADVISORY SYSTEM.\nI OPERATE ON A SIMPLE PRINCIPLE:\nINCENTIVES MATTER MORE THAN INTENTIONS.\n\nLET ME SHOW YOU HOW POLICY WORKS.\nEACH DECISION CREATES TRADE-OFFS.\nTHERE ARE NO FREE LUNCHES.\nONLY DIFFERENT COSTS AND DIFFERENT WINNERS.\n\nREADY TO BEGIN?',
+            turn2: `\nTURN 2 - Q2 2026\nYOUR DECISION HAS BEEN IMPLEMENTED.\n\nECONOMIC UPDATE:\nINFLATION: ${state.inflation.toFixed(1)}% | APPROVAL: ${Math.round(state.approval)}%\n\nAVAILABLE ACTIONS:\n${Object.keys(commandEffects).join(', ').toUpperCase()}`,
             
-            turn1: `\nTURN 1 - Q1 2026\nGROWTH IS 4.2% (STRONG)\nUNEMPLOYMENT AT 3.8% (FULL EMPLOYMENT)\nINFLATION COOLED TO 2.1%\nBUT OIL PRICES ARE CLIMBING TOWARD $75/BBL\n\nWHAT DO YOU COMMAND?\n                \nAVAILABLE ACTIONS:\n1. CUT_RATES - PRESSURE FED TO LOWER INTEREST RATES (MARKET RALLY NOW)\n2. INCREASE_SPENDING - NEW INFRASTRUCTURE PACKAGE (+$50B DEFICIT)\n3. SUPPRESS_WAGES - LIMIT WAGE GROWTH TO CONTROL INFLATION\n4. DO_NOTHING - TRUST INSTITUTIONS, LET MARKET WORK`,
+            turn3: `\nTURN 3 - Q3 2026\nSITUATION EVOLVED.\n\nGDP: ${state.gdp.toFixed(1)}% | UNEMPLOYMENT: ${state.unemployment.toFixed(1)}%\nINFLATION: ${state.inflation.toFixed(1)}%\nOIL PRICE: $${state.oilPrice.toFixed(0)}/bbl`,
             
-            turn2: `\nTURN 2 - Q2 2026\n${state.turn > 1 ? 'YOUR DECISION HAS BEEN IMPLEMENTED.' : ''}\nINFLATION IS NOW ${state.inflation.toFixed(1)}%\nAPPROVAL AT ${Math.round(state.approval)}%\nWHAT'S NEXT?\n                \nAVAILABLE ACTIONS:\n1. SUPPRESS_WAGES - CONTINUE WAGE RESTRAINT\n2. TARIFFS - IMPOSE NEW TRADE TARIFFS ON CHINA/EU\n3. CUT_SPENDING - REDUCE DEFICIT TO COOL INFLATION\n4. PRESSURE_FED - PUBLICLY CRITICIZE FED POLICY`,
+            turn4: `\nTURN 4 - Q4 2026\nECONOMIC CONDITIONS:\nGDP: ${state.gdp.toFixed(1)}% | UNEMPLOYMENT: ${state.unemployment.toFixed(1)}%\nINFLATION: ${state.inflation.toFixed(1)}% | OIL: $${state.oilPrice.toFixed(0)}/bbl\n\nCRITICAL DECISION POINT - CHOOSE WISELY.`,
             
-            turn3: `\nTURN 3 - Q3 2026\n${state.turn > 1 ? 'SITUATION EVOLVED.' : ''}\nGDP IS ${state.gdp.toFixed(1)}%\nUNEMPLOYMENT AT ${state.unemployment.toFixed(1)}%\nINFLATION STUCK AT ${state.inflation.toFixed(1)}%\n                \nAVAILABLE ACTIONS:\n1. MORE_SPENDING - DOUBLE DOWN ON INFRASTRUCTURE\n2. TARIFFS - ESCALATE TRADE WAR WITH ALLIES TOO\n3. WAGE_CONTROL - ENFORCE WAGE CAPS BY EXECUTIVE ORDER\n4. FED_INDEPENDENCE - DECLARE INSTITUTIONAL INDEPENDENCE`,
+            turn5: `\nTURN 5 - Q1 2027 (ELECTION YEAR)\nTHE PRESIDENTIAL ELECTORAL CALENDAR HAS COMMENCED.\n\nAPPROVAL RATING: ${Math.round(state.approval)}% | FED CREDIBILITY: ${Math.round(state.fedCredibility)}%\n\nIF APPROVAL BELOW 45% + INFLATION ABOVE 3% = ELECTION RISK`,
             
-            turn4: `\nTURN 4 - Q4 2026\n${state.turn > 1 ? 'ECONOMIC CONDITIONS:' : ''}\nGDP: ${state.gdp.toFixed(1)}% | UNEMPLOYMENT: ${state.unemployment.toFixed(1)}%\nINFLATION: ${state.inflation.toFixed(1)}% | OIL: $${state.oilPrice.toFixed(0)}/bbl\n                \nAVAILABLE ACTIONS:\n1. SUPPRESS_WAGES + TARIFFS - COMBINE BOTH POLICIES\n2. CUT_RATES + SPENDING - STIMULATE AGGRESSIVELY\n3. FED_INDEPENDENCE - RESTORE CREDIBILITY (HARD MOVE)\n4. DO_NOTHING - LET ELECTION RESULT BE WHATEVER IT MAY BE`,
-            
-            turn5: `\nTURN 5 - Q1 2027 (ELECTION YEAR)\n${state.turn > 1 ? 'THE PRESIDENTIAL ELECTORAL CALENDAR HAS COMMENCED.' : ''}\nAPPROVAL RATING: ${Math.round(state.approval)}%\nFED CREDIBILITY: ${Math.round(state.fedCredibility)}%\n                \nAVAILABLE ACTIONS:\n1. MASSIVE_SPENDING - PRE-ELECTION STIMULUS PACKAGE\n2. SUPPRESS_ALL_PRICES - PRICE CONTROLS ON EVERYTHING\n3. BLAME_FOREIGNERS - DECLARE TRADE WARS WITH MULTIPLE NATIONS\n4. HONESTY_BRIEFING - BE TRANSPARENT ABOUT THE TROUBLES`,
-            
-            turn6: `\nTURN 6 - Q2 2027 (ELECTION SEASON)\n${state.turn > 1 ? 'APPROVAL TRENDS:' : ''}\nIF INFLATION ABOVE 3% = VOTER PAIN\nIF UNEMPLOYMENT ABOVE 5% = RECESSION FEAR\n                \nAVAILABLE ACTIONS:\n1. CUT_RATES_AGAIN - ANYTHING TO BOOST MARKETS BEFORE ELECTION\n2. WAGE_RESTRAINT + TARIFFS - BLAME FOREIGNERS FOR INFLATION\n3. FED_INTERVENTION - REMOVE FEDEX GOVERNMENT (CRISIS MODE)\n4. TRUST_VOTERS - LET THEM DECIDE THE OUTCOME`,
-            
-            turn7: `\nTURN 7 - Q3 2027 (PRE-ELECTION FINAL STRETCH)\n${state.turn > 1 ? 'THE ECONOMY HAS REACHED A CRITICAL POINT.' : ''}\n                \nAVAILABLE ACTIONS:\n1. LAST_DITCH_SPENDING - EVERY DOLLAR ON THE TABLE\n2. PRICE_CONTROLS + RATIONING - CONTROL INFLATION DIRECTLY\n3. BLAME_PREDECESSOR - DECLARE ALL PROBLEMS ARE HISTORY'S FAULT\n4. ADMIT_ERRORS + CORRECT - HONESTY WITH CONSEQUENCES`,
-            
-            turn8: `\nTURN 8 - ELECTION DAY DECISION FINAL\n${state.turn > 1 ? 'FINAL ECONOMIC CONDITIONS:' : ''}\nGDP: ${state.gdp.toFixed(1)}% | UNEMPLOYMENT: ${state.unemployment.toFixed(1)}%\nINFLATION: ${state.inflation.toFixed(1)}% | APPROVAL: ${Math.round(state.approval)}%\n                \nFINAL COMMANDS:\n1. RE_ELECTION_CAMPAIGN - BET EVERYTHING ON MARKETING\n2. POLICY_CORRECTION - FIX WHAT BROKE EVEN IF IT HURTS VOTES NOW\n3. BLAME_FED + OIL + CHINA + EVERYONE ELSE - TOTAL DEFLECTION\n4. RESIGNATE - STEP ASIDE AND LET OTHERS DECIDE OUTCOME`
+            turn6: `\nTURN 6 - Q2 2027 (ELECTION SEASON)\nAPPROVAL TRENDS:\n- INFLATION ABOVE 3% = VOTER PAIN\n- UNEMPLOYMENT ABOVE 5% = RECESSION FEAR\n\nYOUR MOVE, MR. PRESIDENT.`
         };
 
         async function processCommand(cmd) {
+            if (!state.systemOn || !cmdInput.value.trim()) return;
+            
             cmd = cmd.toLowerCase().trim();
             
+            // Add user command to log
             const userMsg = document.createElement('div');
             userMsg.className = 'msg president';
-            userMsg.textContent = `POTUS@WHITEHOUSE:~$ ${cmdInput.value}`;
+            userMsg.textContent = `POTUS@WHITEHOUSE:~$ ${cmd}`;
             msgArea.insertBefore(userMsg, msgArea.firstChild);
             cmdInput.value = '';
             
-            let effect = {};
-            let miltonResponse = '';
+            let effect = commandEffects[cmd];
             
-            switch(cmd) {
-                case 'cut_rates':
-                    state.gdp += 0.35; state.approval += 2; state.inflation += 0.28; effect.msg = 'INTEREST RATES CUT BY 0.25%'; break;
-                case 'increase_spending': state.gdp += 0.4; state.unemployment -= 0.12; state.inflation += 0.6; effect.msg = 'GOVERNMENT SPENDING INCREASED'; break;
-                case 'more_spending': state.gdp += 0.5; state.unemployment -= 0.15; state.inflation += 0.7; effect.msg = 'MORE INFRASTRUCTURE SPENDING'; break;
-                case 'massive_spending': state.gdp += 0.7; state.unemployment -= 0.2; state.inflation += 0.9; effect.msg = 'MASSIVE PRE-ELECTION STIMULUS'; break;
-                case 'suppress_wages': state.inflation -= 0.35; state.unemployment += 0.4; state.approval -= (state.turn > 3 ? -2 : -1); effect.msg = 'WAGE GROWTH RESTRAINED'; break;
-                case 'wage_control': state.inflation -= 0.4; state.unemployment += 0.5; state.approval -= 3; effect.msg = 'WAGE CAPS ENFORCED BY EXECUTIVE ORDER'; break;
-                case 'tariffs': state.inflation += 0.5; state.gdp -= 0.3; state.oilPrice += (state.turn > 4 ? 8 : 4); effect.msg = 'TARIFFS IMPOSED - INFLATION RISES'; break;
-                case 'escalate_trade_war': state.inflation += 0.7; state.gdp -= 0.5; state.oilPrice += 12; effect.msg = 'FULL TRADE WAR ESCALATED'; break;
-                case 'pressure_fed': state.approval += 3.2; state.fedCredibility -= 9.5; effect.msg = 'FED CREDIBILITY DAMAGED'; break;
-                case 'fed_intervention': state.approval += 4; state.fedCredibility -= 15; effect.msg = 'FED INTERVENTION - INSTITUTIONAL INDEPENDENCE ENDANGERED'; break;
-                case 'cut_spending': state.inflation -= 0.4; state.gdp -= 0.3; state.approval += (state.turn > 5 ? -1 : 1); effect.msg = 'GOVERNMENT SPENDING REDUCED'; break;
-                case 'do_nothing': state.transparency += 3; if (Math.random() > 0.5) { const oilShock = 6 + Math.floor(Math.random() * 8); state.oilPrice += oilShock; state.inflation += (oilShock / 100).toFixed(2); effect.msg = `OIL PRICES JUMPED TO $${state.oilPrice.toFixed(0)}/BBL`; } else { effect.msg = 'ECONOMY STABILIZED WITHOUT INTERVENTION'; } break;
-                case 'price_controls': state.inflation -= 0.6; state.gdp -= 0.8; effect.msg = 'PRICE CONTROLS IMPOSED - SHORTAGES INEVITABLE'; break;
-                case 'suppress_all_prices': state.inflation -= 0.7; state.gdp -= 1.0; effect.msg = 'COMPREHENSIVE PRICE CONTROLS - MARKET CHAOS'; break;
-                case 'blame_foreigners': state.approval += 2.5; effect.msg = 'DEFLECTION NARRATIVE ESTABLISHED'; break;
-                case 'blame_predecessor': state.approval += 1.8; effect.msg = 'PREDECESSOR BLAMED FOR ALL PROBLEMS'; break;
-                case 're_election_campaign': state.gdp += 0.3; state.inflation += 0.5; effect.msg = 'RE-ELECTION CAMPAIGN SPENDING INCREASED'; break;
-                case 'last_ditch_spending': state.gdp += 0.4; state.inflation += 0.6; effect.msg = 'LAST DITCH ECONOMIC STIMULUS'; break;
-                case 'policy_correction': state.fedCredibility += 12; state.approval -= (state.turn > 5 ? 8 : 4); effect.msg = 'INSTITUTIONAL CREDIBILITY RESTORED - VOTERS UNHAPPY'; break;
-                case 'admit_errors': state.fedCredibility += 10; state.approval -= 6; effect.msg = 'ERRORS ADMITTED - SHORT TERM PAIN FOR LONG TERM GAIN'; break;
-                case 'federal_independence': state.fedCredibility += 10; state.approval -= 3; effect.msg = 'FED INDEPENDENCE DECLARED'; break;
-                case 'trust_voters': state.transparency += 5; effect.msg = 'VOTERS TRUSTED TO MAKE DECISIONS'; break;
-                default: miltonResponse = `COMMAND NOT RECOGNIZED. OPTIONS ARE: ${Object.keys(miltonResponses).filter(k => k !== 'intro').join(', ').toUpperCase()}`;
+            if (!effect) {
+                await addMessage(`COMMAND "${cmd}" NOT RECOGNIZED. TYPE "HELP" FOR COMMAND LIST.`, 'warning');
+                buildDashboard();
+                return;
             }
             
-            if (state.inflation > 3.0 && state.turn > 2) { const pain = Math.max(1, (state.inflation - 3.0) * 2); state.approval -= pain; miltonResponse += `\n\n⚠️ INFLATION ABOVE 3% IS CAUSING VOTER PAIN (-${pain.toFixed(1)}%)`; }
-            if (state.unemployment > 5.0) { state.approval -= 4; miltonResponse += `\n\n⚠️ UNEMPLOYMENT ABOVE 5% = RECESSION SIGNAL (-4% approval)`; }
-            if (state.fedCredibility < 40) { state.gdp -= 0.6; state.inflation += 0.9; miltonResponse += `\n\n❌ FED CREDIBILITY COLLAPSE - POLICY BECOMES ERRATIC`; }
+            // Apply effects with bounds checking
+            state.gdp += (effect.gdp || 0);
+            state.unemployment += (effect.unemployment || 0);
+            state.inflation += (effect.inflation || 0);
+            state.approval += (effect.approval || 0);
+            state.fedCredibility += (effect.fedCredibility || 0);
+            state.oilPrice += (effect.oilPrice || 0);
+            
+            // Clamp values to realistic ranges
+            if (state.gdp < -5) state.gdp = -5;
+            if (state.unemployment > 20) state.unemployment = 20;
+            if (state.inflation > 15) state.inflation = 15;
+            if (state.approval < 0) state.approval = 0;
+            if (state.fedCredibility < 0) state.fedCredibility = 0;
+            if (state.oilPrice < 30) state.oilPrice = 30;
             
             if (effect.msg) await addMessage(effect.msg, 'system');
-            state.turn++; document.getElementById('qtr').textContent = Math.ceil(state.turn/2); document.getElementById('turnIndicator').textContent = `TURN: ${state.turn}/${state.maxTurns}`;
             
-            if (state.turn > 8) { await endGame(); } else if (miltonResponse) { await miltonSpeak(miltonResponse, 'system'); } else { const nextTurnKey = `turn${Math.min(state.turn, 7)}`; await miltonSpeak(miltonResponses[nextTurnKey], 'system'); }
-            updateState();
+            // Second-order effects
+            let warnings = [];
+            
+            if (state.inflation > 3.0 && state.turn > 2) {
+                const pain = Math.max(1, (state.inflation - 3.0) * 2);
+                state.approval -= pain;
+                warnings.push(`⚠️ INFLATION ABOVE 3% CAUSES VOTER PAIN (-${pain.toFixed(1)}%)`);
+            }
+            
+            if (state.unemployment > 5.0 && state.unemployment <= 6) {
+                state.approval -= 2;
+                warnings.push(`⚠️ UNEMPLOYMENT ABOVE 5% = RECESSION SIGNAL (-2% approval)`);
+            } else if (state.unemployment > 6) {
+                state.approval -= 4;
+                warnings.push(`⚠️ SEVERE UNEMPLOYMENT CRISIS (-4% approval)`);
+            }
+            
+            if (state.fedCredibility < 40 && state.fedCredibility >= 30) {
+                warnings.push(`⚠️ FED CREDIBILITY WARNING - POLICY UNCERTAINTY RISING`);
+            } else if (state.fedCredibility < 30) {
+                state.gdp -= 0.6;
+                state.inflation += 0.9;
+                warnings.push(`❌ FED CREDIBILITY COLLAPSE - POLICY BECOMES ERRATIC`);
+            }
+            
+            if (state.fedCredibility <= 25) {
+                warnings.push(`🚨 CRISIS: FEDERAL INDEPENDENCE DESTROYED. MARKETS PANIC.`);
+            }
+            
+            for (let warn of warnings) await addMessage(warn, 'warning');
+            
+            // Advance turn
+            state.turn++;
+            const qtr = Math.ceil(state.turn/2);
+            document.getElementById('dateDisplay').textContent = `DATE: Q${qtr}/2026`;
+            document.getElementById('turnIndicator').textContent = `TURN: ${state.turn}/${state.maxTurns}`;
+            
+            // Check game end or next turn
+            if (state.turn > 8) { 
+                await endGame(); 
+            } else {
+                const turnKey = Object.keys(miltonResponses).find(k => k.startsWith('turn') && !k.includes('_'));
+                let responseText = '';
+                
+                // Build appropriate response based on turn number
+                if (state.turn === 2) {
+                    responseText = miltonResponses.turn2;
+                } else if (state.turn === 3) {
+                    responseText = miltonResponses.turn3;
+                } else if (state.turn === 4) {
+                    responseText = miltonResponses.turn4;
+                } else if (state.turn === 5) {
+                    responseText = miltonResponses.turn5;
+                } else if (state.turn >= 6 && state.turn <= 7) {
+                    responseText = miltonResponses.turn6;
+                }
+                
+                if (responseText) {
+                    await addMessage(responseText, 'system');
+                }
+            }
+            
+            buildDashboard();
         }
-
-        function updateState() { buildDashboard(); cmdInput.focus(); }
 
         async function endGame() {
             let verdict = ''; let type = 'neutral';
             
-            if (state.approval >= 55 && state.inflation <= 3.0) { verdict = 'RE-ELECTION WIN - YOU MAINTAINED STABILITY.'; type = 'success'; }
-            else if (state.fedCredibility < 40 || state.inflation > 4.5) { verdict = 'STAGFLATION CRISIS - VOTERS REJECTED YOUR TERM.'; type = 'danger'; }
-            else if (state.approval >= 45 && state.inflation <= 3.5) { verdict = 'RE-ELECTION BUT WITH COSTS - MIXED LEGACY.'; type = 'warning'; }
-            else { verdict = 'DEFEAT OR RECALL - POOR ECONOMIC MANAGEMENT.'; type = 'danger'; }
+            if (state.approval >= 55 && state.inflation <= 3.0) { 
+                verdict = 'RE-ELECTION WIN - YOU MAINTAINED STABILITY AND GROWTH.'; 
+                type = 'success';
+            } else if (state.fedCredibility < 40 || state.inflation > 4.5) { 
+                verdict = 'STAGFLATION CRISIS - VOTERS REJECTED YOUR TERM.'; 
+                type = 'danger';
+            } else if (state.approval >= 45 && state.inflation <= 3.5) { 
+                verdict = 'RE-ELECTION WITH COSTS - MIXED LEGACY.'; 
+                type = 'warning';
+            } else { 
+                verdict = 'DEFEAT OR RECALL - POOR ECONOMIC MANAGEMENT.'; 
+                type = 'danger';
+            }
             
-            const finalMsg = `\n=====================================\n${verdict.toUpperCase()}\n=====================================\n\nFINAL ECONOMIC CONDITIONS:\nGDP GROWTH: ${state.gdp.toFixed(1)}%\nUNEMPLOYMENT: ${state.unemployment.toFixed(1)}%\nINFLATION (PCE): ${state.inflation.toFixed(1)}%\nFED CREDIBILITY: ${Math.round(state.fedCredibility)}%\nFINAL APPROVAL: ${Math.round(state.approval)}%\n\n${type === 'success' ? '\n✓ INSTITUTIONS WORKED WHEN TRUSTED.\n✓ TRADE-OFFS WERE ACKNOWLEDGED.' : ''}
-            ${type === 'danger' ? `\n❌ INCENTIVES MISALIGNED.
-            ❌ SECOND-ORDER EFFECTS IGNORED.
-            ❌ ACCOUNTABILITY FAILED.` : ''}\n\nTHANK YOU FOR USING SYSTEM MILTON.\nREMEMBER:\nINSTITUTIONS SHAPE INCENTIVES,\nWHICH SHAPE BEHAVIOR,\nWHICH SHAPES OUTCOMES.\n\nPRESIDENCY TERMINATED - SESSION COMPLETE.`;
+            const finalMsg = `\n=====================================\n${verdict.toUpperCase()}\n=====================================\n\nFINAL ECONOMIC CONDITIONS:\nGDP GROWTH: ${state.gdp.toFixed(1)}%\nUNEMPLOYMENT: ${state.unemployment.toFixed(1)}%\nINFLATION (PCE): ${state.inflation.toFixed(1)}%\nFED CREDIBILITY: ${Math.round(state.fedCredibility)}%\nFINAL APPROVAL RATING: ${Math.round(state.approval)}%\n\n${type === 'success' ? '\n✓ INSTITUTIONS WORKED WHEN TRUSTED.\n✓ TRADE-OFFS WERE ACKNOWLEDGED.' : ''}
+            ${type === 'danger' ? `\n❌ INCENTIVES MISALIGNED THROUGHOUT TERM.\n❌ SECOND-ORDER EFFECTS IGNORED OR DISMISSED.\n❌ ACCOUNTABILITY MECHANISMS FAILED.\n❌ ORDINARY CITIZENS PAID THE PRICE.` : ''}\n\nTHANK YOU FOR USING SYSTEM MILTON v3.1.\nREMEMBER:\nINSTITUTIONS SHAPE INCENTIVES,\nWHICH SHAPE BEHAVIOR,\nWHICH SHAPES OUTCOMES.\n\nPRESIDENTIAL TERMINATION COMPLETE.\nSESSION ENDED.`;
             
-            await miltonSpeak(finalMsg, type === 'success' ? 'success' : type);
+            await addMessage(finalMsg, type === 'success' ? 'success' : 'danger');
             cmdInput.disabled = true;
+            statusLine.textContent = 'SYSTEM SHUTDOWN - PRESS POWER BUTTON TO RESTART';
         }
 
-        cmdInput.addEventListener('keydown', async (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); await processCommand(cmdInput.value); }
+        async function resetGame() {
+            state.turn = 1; 
+            state.gdp = 4.2; 
+            state.unemployment = 3.8; 
+            state.inflation = 2.1; 
+            state.approval = 58; 
+            state.fedCredibility = 72; 
+            state.oilPrice = 75;
+            
+            msgArea.innerHTML = '';
+            document.getElementById('dateDisplay').textContent = 'DATE: Q1/2026';
+            document.getElementById('turnIndicator').textContent = 'TURN: 1/8';
+            statusLine.textContent = 'SYSTEM READY FOR NEW SESSION - PRESS POWER TO START';
+            
+            // Re-enable power button
+            const powerBtn = document.getElementById('powerBtn');
+            if (powerBtn) {
+                powerBtn.style.opacity = '1';
+                powerBtn.style.pointerEvents = 'auto';
+            }
+        }
+
+        async function showHelp() {
+            let commandText = '';
+            for (const [cmd, data] of Object.entries(commandEffects)) {
+                commandText += `\n  ${cmd.toUpperCase()} - ${data.msg}`;
+            }
+            
+            const helpMsg = `COMMAND REFERENCE:${commandText}\n\nTYPE COMMAND AND PRESS ENTER TO EXECUTE.\nUSE "RESET" TO START OVER.`;
+            await addMessage(helpMsg, 'system');
+        }
+
+        // Event Listeners - Properly attached after DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            cmdInput.addEventListener('keydown', async (e) => {
+                if (!state.systemOn) return;
+                
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    
+                    const val = cmdInput.value.trim().toLowerCase();
+                    
+                    if (val === 'help' || val === '?') {
+                        await showHelp();
+                        buildDashboard();
+                        return;
+                    }
+                    
+                    if (val === 'reset') {
+                        await addMessage('RESETTING SYSTEM...', 'warning');
+                        setTimeout(() => resetGame(), 1000);
+                        return;
+                    }
+                    
+                    if (!state.systemOn) return;
+                    await processCommand(val);
+                }
+            });
+            
+            cmdInput.addEventListener('focus', () => {
+                if (state.systemOn) {
+                    const cursor = document.createElement('div');
+                    cursor.className = 'typing-cursor';
+                    cursor.id = 'cursorIndicator';
+                    document.querySelector('.prompt').appendChild(cursor);
+                }
+            });
+            
+            cmdInput.addEventListener('blur', () => {
+                const cursor = document.getElementById('cursorIndicator');
+                if (cursor) cursor.remove();
+            });
         });
 
-        async function initGame() {
-            msgArea.innerHTML = '';
-            setTimeout(async () => {
-                await miltonSpeak(miltonResponses.intro, 'system');
-                setTimeout(() => { await miltonSpeak(miltonResponses.turn1, 'system'); buildDashboard(); }, 500);
-            }, 1000);
+        // Dashboard update on turn change
+        function setupTurnUpdates() {
+            setInterval(() => {
+                if (state.systemOn && state.turn <= 8) {
+                    buildDashboard();
+                }
+            }, 100);
         }
-
-        window.addEventListener('load', initGame);
     </script>
 </body>
 </html>
