@@ -3,1154 +3,505 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Night Raid: Bomber Command</title>
+    <title>Economic Power Simulator</title>
     <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+        }
+        
         body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #050510;
-            font-family: 'Courier New', monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fafafa;
+            color: var(--primary);
         }
         
-        #gameCanvas {
-            display: block;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        
-        .ui-overlay {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            font-size: 18px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            pointer-events: none;
-        }
-        
-        .hud-panel {
-            background: rgba(0,0,0,0.6);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border: 2px solid #ffcc00;
-            box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
-        }
-        
-        .hud-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .hud-label {
-            width: 90px;
-            font-weight: bold;
-            color: #ffcc00;
-        }
-        
-        .hud-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: white;
-        }
-        
-        .center-screen {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 100;
-        }
-        
-        h1 {
-            color: white;
-            font-size: 48px;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+        h1, h2 {
+            font-weight: normal;
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 8px;
             margin-bottom: 20px;
-            animation: pulse 2s infinite;
         }
         
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); text-shadow: 3px 3px 6px rgba(0,0,0,0.8); }
-            50% { transform: scale(1.05); text-shadow: 4px 4px 8px rgba(255, 0, 0, 0.6); }
-        }
-        
-        button {
-            background: linear-gradient(to bottom, #ffcc00, #cc9900);
-            color: black;
-            border: none;
-            padding: 15px 40px;
-            font-size: 24px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            cursor: pointer;
+        .header {
+            background: white;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 6px rgba(100, 70, 0, 0.5);
-            transition: all 0.1s;
-            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
         }
         
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px rgba(100, 70, 0, 0.6);
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         
-        button:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px rgba(100, 70, 0, 0.5);
-        }
-        
-        .tutorial-text {
-            color: white;
-            font-size: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            margin-top: 20px;
-            max-width: 600px;
-            line-height: 1.5;
-        }
-        
-        .mission-counter {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.6);
+        .metric {
+            text-align: center;
             padding: 15px;
+            background: var(--light);
+            border-radius: 6px;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--accent);
+            display: block;
+        }
+        
+        .metric-label {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+        
+        .decision-panel {
+            background: white;
+            padding: 25px;
             border-radius: 8px;
-            border: 2px solid #ffcc00;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         
-        .mission-counter h3 {
-            color: #ffcc00;
-            margin: 0 0 10px 0;
+        .choice {
+            margin: 15px 0;
+            padding: 18px 20px;
+            border: 2px solid var(--light);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
         
-        .progress-bar {
-            width: 200px;
-            height: 20px;
-            background: rgba(0,0,0,0.8);
-            border-radius: 10px;
-            overflow: hidden;
+        .choice:hover {
+            border-color: var(--accent);
+            background: #f8f9fa;
+            transform: translateX(5px);
         }
         
-        .progress-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(to right, #ffcc00, #ff6600);
-            transition: width 0.3s;
+        .choice strong {
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        
+        .event-log {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            padding: 12px;
+            border-left: 4px solid var(--accent);
+            margin: 10px 0;
+            background: #f8f9fa;
+            font-size: 0.95em;
+        }
+        
+        .narrative {
+            font-style: italic;
+            color: #555;
+            margin: 20px 0;
+            padding: 18px;
+            background: var(--light);
+            border-radius: 6px;
+            line-height: 1.7;
+        }
+        
+        .teaching-note {
+            background: #fff9e6;
+            padding: 20px;
+            border-left: 4px solid var(--warning);
+            margin: 25px 0;
+            border-radius: 6px;
+        }
+        
+        .teaching-note h3 {
+            margin-top: 0;
+            color: #7f6a00;
+        }
+        
+        .reset-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+            margin-top: 15px;
+        }
+        
+        .reset-btn:hover {
+            background: #2980b9;
+        }
+        
+        @media (max-width: 600px) {
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            body {
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    
-    <div class="ui-overlay">
-        <div class="hud-panel">
-            <div class="hud-item">
-                <span class="hud-label">TARGETS:</span>
-                <span class="hud-value" id="targetsValue">0/10</span>
-            </div>
-            <div class="hud-item">
-                <span class="hud-label">HP:</span>
-                <span class="hud-value" id="hpValue">100%</span>
-            </div>
-            <div class="hud-item">
-                <span class="hud-label">FUEL:</span>
-                <span class="hud-value" id="fuelValue">100%</span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="mission-counter">
-        <h3>MISSION PROGRESS</h3>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-    </div>
-    
-    <div id="startScreen" class="center-screen">
-        <h1>NIGHT RAID</h1>
-        <p style="color: white; font-size: 24px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">BOMBER COMMAND</p>
-        
-        <div class="tutorial-text">
-            <strong>MISSION:</strong> Bomb enemy targets in industrial district<br><br>
-            <strong>AVOID:</strong> Searchlights (they detect you!) & Flak cannons<br>
-            <strong>CONTROLS:</strong> Move mouse to steer • Click to drop bombs<br>
-            <strong>CAREFUL:</strong> Near-misses throw your plane violently!
-        </div>
-        
-        <button id="startButton">START NIGHT RAID</button>
-    </div>
-    
-    <div id="gameOverScreen" class="center-screen" style="display: none;">
-        <h1 id="gameOverTitle">MISSION ACCOMPLISHED!</h1>
-        <p class="tutorial-text" id="gameOverMessage">
-            Enemy targets neutralized. Good flying, pilot!
+    <div class="header">
+        <h1>Economic Power Simulator</h1>
+        <p style="font-size: 0.95em; color: #666; margin-top: -10px;">
+            A teaching tool showing how incentives shape policy choices and economic outcomes.<br>
+            Inspired by Milton Friedman's approach to institutional analysis.
         </p>
-        <button onclick="location.reload()">FLY AGAIN</button>
     </div>
-
+    
+    <div class="teaching-note">
+        <h3>How This Works</h3>
+        <p>You're the President in early 2026. Each decision creates trade-offs—short-term wins often have long-term costs, and vice versa. The goal isn't to "win" but to see how different choices affect your economy, credibility, and accountability.</p>
+    </div>
+    
+    <h2 style="font-size: 1.3em; margin-top: 0;">Current Economic Dashboard</h2>
+    <div class="dashboard">
+        <div class="metric">
+            <span class="metric-value" id="gdp">4.2%</span>
+            <span class="metric-label">GDP Growth</span>
+        </div>
+        <div class="metric">
+            <span class="metric-value" id="unemployment">3.8%</span>
+            <span class="metric-label">Unemployment</span>
+        </div>
+        <div class="metric">
+            <span class="metric-value" id="inflation">2.1%</span>
+            <span class="metric-label">Inflation (PCE)</span>
+        </div>
+        <div class="metric">
+            <span class="metric-value" id="approval">58%</span>
+            <span class="metric-label">Approval Rating</span>
+        </div>
+        <div class="metric">
+            <span class="metric-value" id="fed-credibility">72%</span>
+            <span class="metric-label">Fed Credibility</span>
+        </div>
+    </div>
+    
+    <h3 style="font-size: 1.1em;">Current Situation</h3>
+    <div class="narrative" id="narrative">
+        Welcome to Q1 2026. The economy is growing at 4.2%, unemployment sits at 3.8% (near full employment), and inflation has cooled to 2.1%. But there's tension building with Iran, and crude oil prices are edging up from $75 toward $80 per barrel.
+    </div>
+    
+    <h3 style="font-size: 1.1em; margin-top: 30px;">What do you do?</h3>
+    <div class="decision-panel" id="choices">
+        <div class="choice" onclick="makeDecision('cut-rates')">
+            <strong>Cut Interest Rates (0.25%)</strong>
+            The Fed has been holding rates steady. Business leaders are pressuring you to push for cuts before the election.
+            <br><br>
+            <em style="font-size: 0.9em; color: #666;">Short-term: Markets rally, +2% approval | Long-term: Risks inflation if oil keeps rising</em>
+        </div>
+        
+        <div class="choice" onclick="makeDecision('increase-spending')">
+            <strong>Increase Government Spending (+$50B Infrastructure)</strong>
+            Propose a new infrastructure package funded by deficit spending.
+            <br><br>
+            <em style="font-size: 0.9em; color: #666;">Short-term: Creates jobs, +0.6% GDP | Long-term: Adds inflation pressure</em>
+        </div>
+        
+        <div class="choice" onclick="makeDecision('pressure-fed')">
+            <strong>Publicly Pressure Fed to Cut Rates</strong>
+            Hold a press conference criticizing the Fed for being too slow. Demand they cut rates now.
+            <br><br>
+            <em style="font-size: 0.9em; color: #666;">Short-term: Markets rally, +3% approval | Long-term: Erodes Fed credibility permanently</em>
+        </div>
+        
+        <div class="choice" onclick="makeDecision('do-nothing')">
+            <strong>Do Nothing / Trust Institutions</strong>
+            Let the Federal Reserve make independent decisions. Maintain institutional independence.
+            <br><br>
+            <em style="font-size: 0.9em; color: #666;">Short-term: No immediate win | Long-term: Preserves credibility, but oil may spike naturally</em>
+        </div>
+    </div>
+    
+    <h3 style="font-size: 1.1em;">Event Log</h3>
+    <div class="event-log" id="eventLog">
+        <div class="log-entry">Q1 2026: Simulation begins. Economy at 4.2% growth, 3.8% unemployment.</div>
+    </div>
+    
+    <button class="reset-btn" onclick="resetGame()">Reset Simulation</button>
+    
     <script>
-        // Game configuration
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        let width, height;
-        function resize() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-        
         // Game state
-        const game = {
-            running: false,
-            targetsDestroyed: 0,
-            totalTargets: 10,
-            hp: 100,
-            fuel: 100,
-            mouseX: width / 2,
-            mouseY: height / 3,
-            time: 0,
-            bombs: [],
-            particles: [],
-            searchlights: [],
-            flakBursts: [],
-            isPainted: false,
-            scrollSpeed: 1.5
+        let gameState = {
+            gdp: 4.2,
+            unemployment: 3.8,
+            inflation: 2.1,
+            approval: 58,
+            fedCredibility: 72,
+            transparency: 60,
+            turn: 1,
+            oilPrice: 75,
+            electionIn: 4 // quarters until next major election
         };
         
-        // Sound system (Web Audio API)
-        class SoundSystem {
-            constructor() {
-                this.enabled = true;
-                try {
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    this.masterGain = this.audioContext.createGain();
-                    this.masterGain.gain.value = 0.3;
-                    this.masterGain.connect(this.audioContext.destination);
-                } catch (e) {
-                    console.log("Web Audio API not supported");
-                    this.enabled = false;
-                }
-            }
+        function updateDashboard() {
+            document.getElementById('gdp').textContent = gameState.gdp.toFixed(1) + '%';
+            document.getElementById('unemployment').textContent = gameState.unemployment.toFixed(1) + '%';
+            document.getElementById('inflation').textContent = gameState.inflation.toFixed(1) + '%';
+            document.getElementById('approval').textContent = Math.round(gameState.approval) + '%';
+            document.getElementById('fed-credibility').textContent = Math.round(gameState.fedCredibility) + '%';
             
-            playTone(freq, type, duration) {
-                if (!this.enabled || !this.audioContext) return;
-                
-                try {
-                    const oscillator = this.audioContext.createOscillator();
-                    const gainNode = this.audioContext.createGain();
-                    
-                    oscillator.type = type;
-                    oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
-                    
-                    gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(this.masterGain);
-                    
-                    oscillator.start();
-                    oscillator.stop(this.audioContext.currentTime + duration);
-                } catch (e) {
-                    // Silent fail for audio errors
-                }
-            }
+            // Color coding based on thresholds
+            const gdpEl = document.getElementById('gdp');
+            gdpEl.style.color = gameState.gdp < 1.5 ? 'var(--danger)' : 
+                               gameState.gdp > 3.0 ? 'var(--success)' : 'var(--accent)';
             
-            playBombDrop() {
-                if (!this.enabled || !this.audioContext) return;
-                this.playTone(300, 'sine', 0.2);
-            }
+            const unemploymentEl = document.getElementById('unemployment');
+            unemploymentEl.style.color = gameState.unemployment > 5.0 ? 'var(--danger)' : 
+                                        gameState.unemployment < 3.5 ? 'var(--warning)' : 'var(--accent)';
             
-            playExplosion() {
-                if (!this.enabled || !this.audioContext) return;
-                const startTime = this.audioContext.currentTime;
-                
-                try {
-                    const oscillator1 = this.audioContext.createOscillator();
-                    const gain1 = this.audioContext.createGain();
-                    oscillator1.type = 'sawtooth';
-                    oscillator1.frequency.setValueAtTime(100, startTime);
-                    oscillator1.frequency.exponentialRampToValueAtTime(20, startTime + 0.5);
-                    
-                    gain1.gain.setValueAtTime(0.4, startTime);
-                    gain1.gain.exponentialRampToValueAtTime(0.01, startTime + 0.8);
-                    
-                    oscillator1.connect(gain1);
-                    gain1.connect(this.masterGain);
-                    oscillator1.start();
-                    oscillator1.stop(startTime + 0.8);
-                } catch (e) {
-                    // Silent fail
-                }
-            }
-            
-            playFlak() {
-                if (!this.enabled || !this.audioContext) return;
-                try {
-                    const startTime = this.audioContext.currentTime;
-                    
-                    for (let i = 0; i < 3; i++) {
-                        setTimeout(() => {
-                            const osc = this.audioContext.createOscillator();
-                            const gain = this.audioContext.createGain();
-                            osc.type = 'square';
-                            osc.frequency.setValueAtTime(800 + Math.random() * 400, startTime);
-                            
-                            gain.gain.setValueAtTime(0.1, startTime);
-                            gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
-                            
-                            osc.connect(gain);
-                            gain.connect(this.masterGain);
-                            osc.start(startTime);
-                            osc.stop(startTime + 0.15);
-                        }, i * 30);
-                    }
-                } catch (e) {
-                    // Silent fail
-                }
-            }
-            
-            playEngine() {
-                if (!this.enabled || !this.audioContext) return;
-                this.playTone(150, 'triangle', 0.3);
-            }
-            
-            playMissionComplete() {
-                if (!this.enabled || !this.audioContext) return;
-                const startTime = this.audioContext.currentTime;
-                
-                for (let note of [440, 554, 659]) {
-                    setTimeout(() => {
-                        this.playTone(note, 'sine', 1.0);
-                    }, (note - 440) / 220 * 300);
-                }
-            }
+            const inflationEl = document.getElementById('inflation');
+            inflationEl.style.color = gameState.inflation > 3.0 ? 'var(--danger)' : 
+                                    gameState.inflation < 1.5 ? 'var(--success)' : 'var(--accent)';
         }
         
-        const sound = new SoundSystem();
+        function addLogEntry(text, type = 'neutral') {
+            const logDiv = document.getElementById('eventLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            let prefix = '';
+            if (type === 'warning') prefix = '⚠️ ';
+            else if (type === 'success') prefix = '✅ ';
+            else if (type === 'danger') prefix = '❌ ';
+            
+            entry.textContent = `${prefix}Q${gameState.turn} 2026: ${text}`;
+            logDiv.insertBefore(entry, logDiv.lastElementChild);
+        }
         
-        // Particle system
-        class Particle {
-            constructor(x, y, type) {
-                this.x = x;
-                this.y = y;
-                this.type = type;
-                this.life = 60;
-                this.maxLife = 60;
-                
-                if (type === 'fire') {
-                    this.size = Math.random() * 15 + 5;
-                    this.speedX = (Math.random() - 0.5) * 8;
-                    this.speedY = (Math.random() - 0.5) * 8 - 2;
-                } else if (type === 'smoke') {
-                    this.size = Math.random() * 20 + 10;
-                    this.speedX = (Math.random() - 0.5) * 4;
-                    this.speedY = -1;
-                } else if (type === 'debris') {
-                    this.size = Math.random() * 5 + 2;
-                    this.speedX = (Math.random() - 0.5) * 15;
-                    this.speedY = (Math.random() - 0.5) * 15;
-                } else if (type === 'tracer') {
-                    this.size = 2;
-                    this.speedX = (Math.random() - 0.5) * 2;
-                    this.speedY = Math.random() * 2 + 2;
-                }
-                
-                this.rotation = Math.random() * Math.PI * 2;
-                this.rotationSpeed = (Math.random() - 0.5) * 0.2;
-            }
+        function makeDecision(choice) {
+            let effects = {};
             
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.life--;
-                this.rotation += this.rotationSpeed;
-                
-                if (this.type === 'fire') {
-                    this.size *= 0.95;
-                    this.speedY -= 0.1;
-                } else if (this.type === 'smoke') {
-                    this.size *= 1.02;
-                    this.speedX += (Math.random() - 0.5) * 0.5;
-                } else if (this.type === 'debris') {
-                    this.speedY += 0.3;
-                    this.speedX *= 0.98;
-                } else if (this.type === 'tracer') {
-                    this.size *= 0.9;
-                }
-            }
-            
-            draw(ctx) {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                
-                if (this.type === 'smoke') {
-                    ctx.fillStyle = `rgba(80, 80, 80, ${Math.min(1, this.life / 30)})`;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-                    ctx.fill();
-                } else {
-                    ctx.fillStyle = this.type === 'fire' ? `hsl(${30 + Math.random() * 40}, ${100}%, ${60 + Math.random() * 30}%):` : (this.type === 'debris' ? '#8B4513' : '#ff6600');
-                    ctx.globalAlpha = Math.min(1, this.life / 20);
+            switch(choice) {
+                case 'cut-rates':
+                    gameState.gdp += 0.35;
+                    gameState.approval += 2;
+                    gameState.inflation += 0.28;
+                    effects.msg = 'Interest rates cut by 0.25%. Markets rally briefly. GDP boosts in short term.';
+                    break;
                     
-                    if (this.type === 'tracer') {
-                        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size * 3);
-                    } else if (this.type === 'debris') {
-                        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                case 'increase-spending':
+                    gameState.gdp += 0.55;
+                    gameState.unemployment -= 0.12;
+                    gameState.inflation += 0.48;
+                    effects.msg = 'New infrastructure spending announced (+$50B). GDP boosts temporarily, unemployment dips slightly.';
+                    break;
+                    
+                case 'pressure-fed':
+                    gameState.approval += 3.2;
+                    gameState.fedCredibility -= 9.5;
+                    gameState.gdp += 0.18;
+                    gameState.inflation += 0.42;
+                    effects.msg = 'You publicly pressure the Fed to cut rates. Markets rally but credibility takes a hit.';
+                    break;
+                    
+                case 'do-nothing':
+                    gameState.transparency += 3;
+                    // Natural oil shock chance (no intervention)
+                    if (Math.random() > 0.5) {
+                        const oilShock = 6 + Math.floor(Math.random() * 8);
+                        gameState.oilPrice += oilShock;
+                        gameState.inflation += (oilShock / 100).toFixed(2);
+                        effects.msg = `Oil prices jump to $${gameState.oilPrice.toFixed(0)}/barrel amid Middle East tensions. Inflation rises.`;
                     } else {
-                        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
-                        gradient.addColorStop(0, '#ffff00');
-                        gradient.addColorStop(0.5, '#ff6600');
-                        gradient.addColorStop(1, '#cc3300');
-                        
-                        ctx.fillStyle = gradient;
-                        ctx.beginPath();
-                        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-                        ctx.fill();
+                        effects.msg = 'Economy continues steady growth without intervention. Oil remains stable.';
                     }
-                }
-                
-                ctx.restore();
-            }
-        }
-        
-        // Searchlight class
-        class Searchlight {
-            constructor(x) {
-                this.x = x;
-                this.angle = Math.PI / 2; // Pointing straight up
-                this.sweepSpeed = (Math.random() - 0.5) * 0.02;
-                this.width = 100; // Beam width at the top of the screen
+                    break;
             }
             
-            update() {
-                this.x -= game.scrollSpeed;
-                this.angle += this.sweepSpeed;
-                
-                // Reverse sweep at limits
-                if (this.angle < Math.PI / 4 || this.angle > 3 * Math.PI / 4) {
-                    this.sweepSpeed *= -1;
-                }
-                
-                this.checkDetection();
+            // Add decision effect to log
+            addLogEntry(effects.msg);
+            
+            // Apply natural consequences based on thresholds
+            if (gameState.inflation > 3.0 && gameState.approval > 65) {
+                const pain = Math.max(1, (gameState.inflation - 3.0) * 2);
+                gameState.approval -= pain;
+                addLogEntry(`⚠️ Inflation above 3% starts hurting voter sentiment despite high approval (-${pain.toFixed(1)}%).`, 'warning');
             }
             
-            checkDetection() {
-                // Basic trigonometry to check if bomber is inside the cone
-                const dx = bomber.x - this.x;
-                const dy = height - bomber.y;
-                const targetAngle = Math.atan2(dy, dx);
-                
-                // If angle difference is tight, bomber is lit
-                if (Math.abs(targetAngle - this.angle) < 0.1) {
-                    game.isPainted = true; // Triggers flak frenzy
-                }
+            if (gameState.fedCredibility < 45 && gameState.fedCredibility > 0) {
+                addLogEntry(`⚠️ Fed credibility crisis approaching! Policy uncertainty rising.`, 'warning');
             }
             
-            draw(ctx) {
-                ctx.save();
-                ctx.globalCompositeOperation = 'screen';
-                ctx.fillStyle = 'rgba(255, 255, 200, 0.15)'; // Pale yellow beam
-                ctx.beginPath();
-                ctx.moveTo(this.x, height); // Base of light
-                
-                // Calculate top corners of the beam
-                const leftX = this.x + Math.cos(this.angle - 0.1) * height * 2;
-                const leftY = height - Math.sin(this.angle - 0.1) * height * 2;
-                const rightX = this.x + Math.cos(this.angle + 0.1) * height * 2;
-                const rightY = height - Math.sin(this.angle + 0.1) * height * 2;
-                
-                ctx.lineTo(leftX, leftY);
-                ctx.lineTo(rightX, rightY);
-                ctx.closePath();
-                ctx.fill();
-                ctx.restore();
-            }
-        }
-        
-        // Flak Burst class with shockwave physics
-        class FlakBurst {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.radius = 1;
-                this.maxRadius = 40 + Math.random() * 30;
-                this.life = 100; // Lingers for a long time
-                
-                this.applyShockwave();
+            if (gameState.fedCredibility <= 25) {
+                gameState.gdp -= 0.6;
+                gameState.inflation += 0.9;
+                addLogEntry(`❌ Fed credibility collapsed! Policy becomes erratic, inflation spikes sharply.`, 'danger');
             }
             
-            applyShockwave() {
-                const dx = bomber.x - this.x;
-                const dy = bomber.y - this.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                
-                if (dist < 150) {
-                    // Screen shake based on proximity
-                    const intensity = (150 - dist) / 10;
-                    canvas.style.transform = `translate(${(Math.random()-0.5)*intensity}px, ${(Math.random()-0.5)*intensity}px)`;
-                    setTimeout(() => { canvas.style.transform = 'none'; }, 50);
-                    
-                    // Apply violent impulse to bomber
-                    if (dist < this.maxRadius + 20) {
-                        bomber.y -= (dy / dist) * 20; // Throw the plane
-                        game.hp -= 15;
-                        sound.playExplosion();
-                        
-                        // Create debris particles from impact
-                        for (let i = 0; i < 10; i++) {
-                            game.particles.push(new Particle(bomber.x, bomber.y, 'debris'));
-                        }
-                    }
-                }
+            if (gameState.approval < 38 && gameState.electionIn === 1) {
+                endGame('You lose the election decisively due to economic mismanagement. Voters punished poor choices.', 'danger');
+                return;
             }
             
-            update() {
-                this.x -= game.scrollSpeed;
-                if (this.radius < this.maxRadius) this.radius += 5; // Rapid expansion
-                this.life--;
+            // Game over conditions
+            if (gameState.gdp > 6.0 || gameState.inflation > 5.0) {
+                addLogEntry(`⚠️ Extreme economic conditions! Policy shift urgent or crisis imminent.`, 'warning');
             }
             
-            draw(ctx) {
-                ctx.save();
-                if (this.radius < this.maxRadius * 0.3) {
-                    // Initial blinding flash
-                    ctx.fillStyle = '#ffffff';
+            if (gameState.approval < 25 && gameState.electionIn <= 2) {
+                endGame('Approval ratings collapsed. You face recall pressure or certain defeat.', 'danger');
+                return;
+            }
+            
+            // Advance turn
+            gameState.turn++;
+            if (gameState.electionIn > 0) gameState.electionIn--;
+            
+            updateDashboard();
+            
+            // Update narrative for next decision
+            const narrative = document.getElementById('narrative');
+            let gdpColor = gameState.gdp < 1.5 ? 'red' : 
+                          gameState.gdp > 3.0 ? '#27ae60' : '#3498db';
+            let inflationColor = gameState.inflation > 3.0 ? 'red' : '#27ae60';
+            
+            narrative.innerHTML = `
+                <strong>Current Situation:</strong><br>
+                Growth stands at ${gameState.gdp.toFixed(1)}% (color: ${gdpColor}), unemployment at ${gameState.unemployment.toFixed(1)}%. 
+                Inflation has moved to ${gameState.inflation.toFixed(1)}% after your last decision.
+                Oil is trading around $${gameState.oilPrice.toFixed(0)}/barrel, and the Fed's credibility sits at ${Math.round(gameState.fedCredibility)}%.<br><br>
+                <em>You have ${gameState.electionIn > 0 ? gameState.electionIn : 'no'} quarters until the next major election.</em>
+            `;
+            
+            // Check for end game after max turns
+            if (gameState.turn >= 10) {
+                let verdict = '';
+                if (gameState.approval >= 55 && gameState.inflation <= 3.0) {
+                    verdict = 'You maintained stability and won re-election! Good institutional management.';
+                } else if (gameState.fedCredibility < 40 || gameState.inflation > 4.0) {
+                    verdict = 'Stagflation or credibility crisis damaged your term. Voters were unhappy.';
                 } else {
-                    // Lingering black smoke
-                    ctx.fillStyle = `rgba(20, 20, 20, ${Math.min(1, this.life / 100)})`;
+                    verdict = 'Mixed results—some wins, some costs. The trade-offs are clear in the data.';
                 }
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
+                endGame(verdict);
             }
         }
         
-        // Background clouds
-        class Cloud {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height * 0.7;
-                this.size = Math.random() * 40 + 20;
-                this.speed = Math.random() * 1 + 0.5;
-                this.opacity = Math.random() * 0.3 + 0.1;
-            }
+        function endGame(reason, type = 'neutral') {
+            const decisionPanel = document.getElementById('choices');
             
-            update() {
-                this.x -= this.speed;
-                if (this.x < -100) this.x = width + 100;
-            }
-            
-            draw(ctx) {
-                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.arc(this.x + this.size * 0.7, this.y - this.size * 0.3, this.size * 0.8, 0, Math.PI * 2);
-                ctx.arc(this.x - this.size * 0.5, this.y + this.size * 0.2, this.size * 0.6, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-        
-        // Ground objects
-        class GroundObject {
-            constructor(x, type) {
-                this.x = x;
-                this.type = type;
-                this.width = type === 'tank' ? 40 : type === 'bunker' ? 80 : 30;
-                this.height = type === 'tank' ? 25 : type === 'bunker' ? 40 : 20;
-                this.y = height - this.height - 20;
-                this.active = true;
-            }
-            
-            draw(ctx) {
-                if (!this.active) return;
-                
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                
-                switch (this.type) {
-                    case 'tank':
-                        ctx.fillStyle = '#654321';
-                        ctx.fillRect(0, 10, this.width, this.height - 10);
-                        ctx.fillStyle = '#8B4513';
-                        ctx.beginPath();
-                        ctx.arc(this.width / 2, 10, this.width / 2.5, Math.PI, 0);
-                        ctx.fill();
-                        ctx.fillStyle = '#4a3b2a';
-                        ctx.fillRect(this.width / 2 + 5, 5, this.width, 6);
-                        break;
-                        
-                    case 'bunker':
-                        ctx.fillStyle = '#808080';
-                        ctx.fillRect(0, 10, this.width, this.height - 10);
-                        ctx.beginPath();
-                        ctx.moveTo(0, 10);
-                        ctx.lineTo(this.width / 2, -15);
-                        ctx.lineTo(this.width, 10);
-                        ctx.closePath();
-                        ctx.fill();
-                        for (let i = 0; i < this.width; i += 20) {
-                            ctx.fillRect(i + 5, 10, 10, 15);
-                        }
-                        break;
-                        
-                    case 'artillery':
-                        ctx.fillStyle = '#654321';
-                        ctx.fillRect(0, 15, this.width, this.height - 15);
-                        ctx.fillStyle = '#8B4513';
-                        ctx.beginPath();
-                        ctx.arc(this.width / 2, 15, 8, Math.PI, 0);
-                        ctx.fill();
-                        break;
-                        
-                    case 'cannon':
-                        ctx.fillStyle = '#777777';
-                        ctx.fillRect(0, 15, this.width, this.height - 15);
-                        ctx.strokeStyle = '#555555';
-                        ctx.lineWidth = 4;
-                        ctx.beginPath();
-                        ctx.moveTo(this.x + this.width / 2, 15);
-                        ctx.lineTo(this.x + this.width / 2 + 30, 5);
-                        ctx.stroke();
-                        break;
-                }
-                
-                ctx.restore();
-            }
-            
-            createExplosion() {
-                this.active = false;
-                sound.playExplosion();
-                
-                for (let i = 0; i < 30; i++) {
-                    game.particles.push(new Particle(this.x + this.width/2, this.y + this.height/2, 'fire'));
-                }
-                for (let i = 0; i < 15; i++) {
-                    game.particles.push(new Particle(this.x + this.width/2, this.y + this.height/2, 'smoke'));
-                }
-                for (let i = 0; i < 20; i++) {
-                    game.particles.push(new Particle(this.x + this.width/2, this.y + this.height/2, 'debris'));
-                }
-                
-                canvas.style.transform = 'translate(5px, 5px)';
-                setTimeout(() => {
-                    canvas.style.transform = 'none';
-                }, 100);
-            }
-        }
-        
-        // Flak cannon
-        class FlakCannon {
-            constructor(x) {
-                this.x = x;
-                this.y = height - 40;
-                this.lastShot = 0;
-                this.shootInterval = Math.random() * 150 + 100;
-            }
-            
-            update(playerX, playerY) {
-                // Increase fire rate if player is painted by searchlight
-                const currentInterval = game.isPainted ? this.shootInterval * 0.2 : this.shootInterval;
-                
-                if (game.time - this.lastShot > currentInterval) {
-                    this.shoot();
-                    this.lastShot = game.time;
-                    this.shootInterval = Math.random() * 150 + 80;
-                }
-            }
-            
-            shoot() {
-                sound.playFlak();
-                
-                // Create tracers
-                for (let i = 0; i < 3; i++) {
-                    game.particles.push(new Particle(
-                        this.x,
-                        this.y - 10,
-                        'tracer'
-                    ));
-                }
-                
-                // CRITICAL FIX: Create flak burst at a fixed altitude above ground, NOT tracking the plane
-                // This ensures flak comes from cannons and explodes at their designated height
-                const burstAltitude = height - 250; // Fixed altitude for flak explosions
-                game.flakBursts.push(new FlakBurst(this.x + (Math.random() - 0.5) * 50, burstAltitude));
-            }
-            
-            draw(ctx) {
-                ctx.fillStyle = '#666666';
-                ctx.fillRect(this.x - 10, this.y - 20, 20, 20);
-                
-                ctx.strokeStyle = '#444444';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y - 20);
-                ctx.lineTo(this.x + Math.sin(game.time * 0.01) * 30, this.y - 50);
-                ctx.stroke();
-                
-                ctx.fillStyle = '#333333';
-                ctx.fillRect(this.x - 15, this.y, 30, 20);
-            }
-        }
-        
-        // Bomber aircraft with progressive damage
-        class Bomber {
-            constructor() {
-                this.x = width / 4;
-                this.y = height / 3;
-                this.width = 80;
-                this.height = 30;
-                this.speedX = 2;
-                this.targetY = height / 3;
-                this.bankAngle = 0;
-                this.fuelLeakTimer = 0;
-            }
-            
-            update() {
-                const dy = game.mouseY - this.y;
-                this.y += dy * 0.1;
-                
-                this.bankAngle = Math.max(-0.3, Math.min(0.3, -dy * 0.002));
-                
-                // Progressive damage effects
-                if (game.hp < 50) {
-                    this.createEngineFire();
-                }
-                
-                if (this.fuelLeakTimer > 0) {
-                    this.createFuelLeak();
-                    this.fuelLeakTimer--;
-                }
-                
-                if (game.time % 15 === 0) {
-                    sound.playEngine();
-                }
-            }
-            
-            createEngineFire() {
-                // Create engine fire particles on one of the engines
-                const engineX = this.x - this.width/4 + Math.random() * this.width/3;
-                for (let i = 0; i < 2; i++) {
-                    game.particles.push(new Particle(engineX, this.y + 5 + Math.random()*10, 'smoke'));
-                }
-            }
-            
-            createFuelLeak() {
-                // Create fuel vapor trail from wings
-                const wingX = this.x - this.width/4;
-                for (let i = 0; i < 3; i++) {
-                    game.particles.push(new Particle(wingX + Math.random()*this.width, this.y + 15, 'debris'));
-                }
-            }
-            
-            draw(ctx) {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.bankAngle);
-                
-                // Draw B-17 bomber (simplified)
-                
-                // Fuselage
-                ctx.fillStyle = '#C0C0C0';
-                ctx.beginPath();
-                ctx.ellipse(0, 0, this.width/2, this.height/3, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Wings
-                ctx.fillStyle = '#A9A9A9';
-                ctx.fillRect(-this.width/4, -5, this.width/2, 10);
-                
-                // Tail
-                ctx.beginPath();
-                ctx.moveTo(-this.width/2 + 10, -5);
-                ctx.lineTo(-this.width/2 - 15, -25);
-                ctx.lineTo(-this.width/2 - 5, -5);
-                ctx.fill();
-                
-                // Engine nacelles
-                for (let i = 0; i < 3; i++) {
-                    const x = -this.width/4 + i * this.width/6;
-                    ctx.fillStyle = '#808080';
-                    ctx.beginPath();
-                    ctx.arc(x, 5, 8, 0, Math.PI * 2);
-                    ctx.fill();
+            // Build final metrics display
+            let verdictHtml = `
+                <div style="background: ${type === 'danger' ? '#e74c3c20' : type === 'success' ? '#27ae6020' : '#f8f9fa'}; padding: 25px; border-radius: 8px;">
+                    <h3 style="margin-top: 0; color: ${type === 'danger' ? '#c0392b' : type === 'success' ? '#1e8449' : '#2c3e50'}">Simulation Complete</h3>
+                    <p><strong>${reason}</strong></p>
                     
-                    // Propellers
-                    if (game.time % 3 === 0) {
-                        ctx.strokeStyle = '#4a4a4a';
-                        ctx.lineWidth = 2;
-                        ctx.beginPath();
-                        ctx.moveTo(x - 12, 5);
-                        ctx.lineTo(x + 12, 5);
-                        ctx.stroke();
-                    }
-                }
-                
-                // Bomb bay doors
-                ctx.fillStyle = '#696969';
-                ctx.fillRect(-20, 5, 40, 5);
-                
-                ctx.restore();
-            }
-            
-            dropBomb() {
-                if (game.fuel > 5) {
-                    game.bombs.push(new Bomb(this.x, this.y + 15));
-                    sound.playBombDrop();
-                    game.fuel -= 5;
+                    <div style="background: white; padding: 20px; border-radius: 6px; margin: 15px 0;">
+                        <strong>Final Metrics:</strong>
+                        <ul style="margin: 10px 0; line-height: 1.8;">
+                            <li>GDP Growth: ${gameState.gdp.toFixed(1)}%</li>
+                            <li>Unemployment: ${gameState.unemployment.toFixed(1)}%</li>
+                            <li>Inflation (PCE): ${gameState.inflation.toFixed(1)}%</li>
+                            <li>Final Approval: ${Math.round(gameState.approval)}%</li>
+                            <li>Fed Credibility: ${Math.round(gameState.fedCredibility)}%</li>
+                        </ul>
+                    </div>
                     
-                    // Small explosion effect
-                    for (let i = 0; i < 5; i++) {
-                        game.particles.push(new Particle(this.x, this.y + 25, 'smoke'));
-                    }
-                } else {
-                    // Empty fuel warning
-                    ctx.fillStyle = '#ff3333';
-                    ctx.font = '24px Courier New';
-                    ctx.textAlign = 'center';
-                    ctx.fillText("WARNING: LOW FUEL!", width/2, height - 50);
-                }
-            }
-        }
-        
-        // Bomb class with fixed collision detection
-        class Bomb {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.speedY = 5;
-                this.trail = [];
-                this.exploded = false;
-            }
-            
-            update() {
-                if (this.exploded) return;
-                
-                this.y += this.speedY;
-                this.speedY += 0.2; // gravity
-                
-                // Add trail
-                this.trail.push({x: this.x, y: this.y});
-                if (this.trail.length > 8) {
-                    this.trail.shift();
-                }
-                
-                // Check ground collision
-                if (this.y >= height - 20) {
-                    this.explode();
-                }
-            }
-            
-            explode() {
-                this.exploded = true;
-                
-                // Create explosion particles
-                for (let i = 0; i < 40; i++) {
-                    game.particles.push(new Particle(this.x, this.y - 5, 'fire'));
-                }
-                for (let i = 0; i < 20; i++) {
-                    game.particles.push(new Particle(this.x, this.y - 5, 'smoke'));
-                }
-                for (let i = 0; i < 30; i++) {
-                    game.particles.push(new Particle(this.x, this.y - 5, 'debris'));
-                }
-                
-                // Check target hits with increased radius
-                const explosionRadius = 120; // Increased from 60 to 120
-                
-                for (const obj of groundObjects) {
-                    if (!obj.active) continue;
+                    <div class="teaching-note">
+                        <h3 style="margin-top: 0;">What This Shows</h3>
+                        <p>Every policy decision creates trade-offs. There are no perfect choices—only different paths with different costs and winners/losers.</p>
+                        <p><strong>The key question isn't "what's the right choice?" but:</strong></p>
+                        <ul style="margin: 10px 0;">
+                            <li>Who pays for this choice?</li>
+                            <li>When do we find out who's responsible?</li>
+                            <li>How do institutions constrain or enable bad decisions?</li>
+                        </ul>
+                    </div>
                     
-                    // Calculate distance from bomb center to object center
-                    const dx = obj.x + obj.width/2 - this.x;
-                    const dy = obj.y + obj.height/2 - (this.y - 5);
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    
-                    if (dist < explosionRadius) {
-                        console.log("Target hit!", dist, "px from center");
-                        obj.createExplosion();
-                        game.targetsDestroyed++;
-                        
-                        // Check win condition
-                        if (game.targetsDestroyed >= game.totalTargets) {
-                            setTimeout(() => {
-                                game.running = false;
-                                document.getElementById('startScreen').style.display = 'none';
-                                document.getElementById('gameOverScreen').style.display = 'block';
-                                document.getElementById('gameOverTitle').textContent = "MISSION ACCOMPLISHED!";
-                                document.getElementById('gameOverMessage').innerHTML = `
-                                    All enemy targets neutralized.<br>
-                                    Good flying, pilot!<br><br>
-                                    Targets Destroyed: ${game.targetsDestroyed}/${game.totalTargets}
-                                `;
-                                sound.playMissionComplete();
-                            }, 2000);
-                        }
-                    }
-                }
-            }
+                    <p style="font-style: italic; color: #666; margin-top: 20px;">
+                        This simulator is inspired by Milton Friedman's approach: showing how institutions shape incentives, not just outcomes. When transparency erodes and accountability weakens, bad policy becomes more likely—and ordinary people pay the price.
+                    </p>
+                </div>
+            `;
             
-            draw(ctx) {
-                if (this.exploded) return;
-                
-                // Draw trail
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                if (this.trail.length > 0) {
-                    ctx.moveTo(this.trail[0].x, this.trail[0].y);
-                    for (let i = 1; i < this.trail.length; i++) {
-                        ctx.lineTo(this.trail[i].x, this.trail[i].y);
-                    }
-                }
-                ctx.stroke();
-                
-                // Draw bomb
-                ctx.fillStyle = '#333333';
-                ctx.beginPath();
-                ctx.ellipse(this.x, this.y, 5, 8, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.strokeStyle = '#ff6600';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(this.x - 3, this.y + 8);
-                ctx.lineTo(this.x + 3, this.y + 8);
-                ctx.stroke();
-            }
+            decisionPanel.innerHTML = verdictHtml;
+            addLogEntry(`SIMULATION ENDS: ${reason}`, type);
         }
         
-        // Initialize game objects
-        let clouds = [];
-        let groundObjects = [];
-        let flakCannons = [];
-        let bomber;
-        
-        function initGame() {
-            clouds = [];
-            for (let i = 0; i < 15; i++) {
-                clouds.push(new Cloud());
-            }
+        function resetGame() {
+            gameState = {
+                gdp: 4.2,
+                unemployment: 3.8,
+                inflation: 2.1,
+                approval: 58,
+                fedCredibility: 72,
+                transparency: 60,
+                turn: 1,
+                oilPrice: 75,
+                electionIn: 4
+            };
             
-            // Add searchlights
-            game.searchlights = [];
-            const searchlightPositions = [200, 600, 1000, 1400, 1800];
-            for (let x of searchlightPositions) {
-                game.searchlights.push(new Searchlight(x));
-            }
+            document.getElementById('eventLog').innerHTML = '<div class="log-entry">Q1 2026: Simulation reset. Economy at 4.2% growth, 3.8% unemployment.</div>';
             
-            groundObjects = [];
-            // CRITICAL FIX: Create targets within visible screen area
-            const targetPositions = [300, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2100];
+            const choicesPanel = document.getElementById('choices');
+            choicesPanel.innerHTML = `
+                <div class="choice" onclick="makeDecision('cut-rates')">
+                    <strong>Cut Interest Rates (0.25%)</strong>
+                    The Fed has been holding rates steady. Business leaders are pressuring you to push for cuts before the election.
+                    <br><br>
+                    <em style="font-size: 0.9em; color: #666;">Short-term: Markets rally, +2% approval | Long-term: Risks inflation if oil keeps rising</em>
+                </div>
+                
+                <div class="choice" onclick="makeDecision('increase-spending')">
+                    <strong>Increase Government Spending (+$50B Infrastructure)</strong>
+                    Propose a new infrastructure package funded by deficit spending.
+                    <br><br>
+                    <em style="font-size: 0.9em; color: #666;">Short-term: Creates jobs, +0.6% GDP | Long-term: Adds inflation pressure</em>
+                </div>
+                
+                <div class="choice" onclick="makeDecision('pressure-fed')">
+                    <strong>Publicly Pressure Fed to Cut Rates</strong>
+                    Hold a press conference criticizing the Fed for being too slow. Demand they cut rates now.
+                    <br><br>
+                    <em style="font-size: 0.9em; color: #666;">Short-term: Markets rally, +3% approval | Long-term: Erodes Fed credibility permanently</em>
+                </div>
+                
+                <div class="choice" onclick="makeDecision('do-nothing')">
+                    <strong>Do Nothing / Trust Institutions</strong>
+                    Let the Federal Reserve make independent decisions. Maintain institutional independence.
+                    <br><br>
+                    <em style="font-size: 0.9em; color: #666;">Short-term: No immediate win | Long-term: Preserves credibility, but oil may spike naturally</em>
+                </div>
+            `;
             
-            for (let i = 0; i < targetPositions.length; i++) {
-                const types = ['tank', 'bunker', 'artillery', 'cannon'];
-                const type = types[Math.floor(Math.random() * types.length)];
-                groundObjects.push(new GroundObject(targetPositions[i], type));
-            }
+            document.getElementById('narrative').innerHTML = 'Welcome to Q1 2026. The economy is growing at 4.2%, unemployment sits at 3.8% (near full employment), and inflation has cooled to 2.1%. But there\'s tension building with Iran, and crude oil prices are edging up from $75 toward $80 per barrel.';
             
-            // Create flak cannons
-            flakCannons = [];
-            for (let i = 0; i < 6; i++) {
-                flakCannons.push(new FlakCannon(400 + i * 250));
-            }
-            
-            game.bombs = [];
-            game.particles = [];
-            game.flakBursts = [];
-            bomber = new Bomber();
+            updateDashboard();
         }
         
-        // Input handling
-        window.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            game.mouseX = e.clientX - rect.left;
-            game.mouseY = e.clientY - rect.top;
+        // Initialize on load
+        window.addEventListener('load', () => {
+            updateDashboard();
         });
-        
-        window.addEventListener('mousedown', () => {
-            if (game.running && bomber) {
-                bomber.dropBomb();
-            }
-        });
-        
-        // Touch support for mobile
-        window.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            game.mouseX = e.touches[0].clientX - rect.left;
-            game.mouseY = e.touches[0].clientY - rect.top;
-        }, {passive: false});
-        
-        window.addEventListener('touchstart', () => {
-            if (game.running && bomber) {
-                bomber.dropBomb();
-            }
-        });
-        
-        // Main game loop
-        function update() {
-            if (!game.running) return;
-            
-            try {
-                game.time++;
-                
-                // Reset painted status each frame
-                game.isPainted = false;
-                
-                // Update clouds
-                for (let i = 0; i < clouds.length; i++) {
-                    clouds[i].update();
-                }
-                
-                // Update searchlights
-                for (let i = 0; i < game.searchlights.length; i++) {
-                    game.searchlights[i].update();
-                }
-                
-                // Update bomber
-                if (bomber) bomber.update();
-                
-                // Update flak cannons
-                for (let i = 0; i < flakCannons.length; i++) {
-                    flakCannons[i].update(bomber ? bomber.x : width/2, bomber ? bomber.y : height/3);
-                }
-                
-                // Update bombs with proper cleanup
-                const newBombs = [];
-                for (let i = 0; i < game.bombs.length; i++) {
-                    const bomb = game.bombs[i];
-                    if (!bomb.exploded) {
-                        bomb.update();
-                        newBombs.push(bomb);
-                    }
-                }
-                game.bombs = newBombs;
-                
-                // Update flak bursts
-                game.flakBursts.forEach(burst => burst.update());
-                game.flakBursts = game.flakBursts.filter(burst => burst.life > 0);
-                
-                // Update particles with proper cleanup
-                const newParticles = [];
-                for (let i = 0; i < game.particles.length; i++) {
-                    const particle = game.particles[i];
-                    if (particle.life > 0) {
-                        particle.update();
-                        newParticles.push(particle);
-                    }
-                }
-                game.particles = newParticles;
-                
-                // Update UI
-                updateUI();
-            } catch (error) {
-                console.error("Game error:", error);
-            }
-        }
-        
-        function draw() {
-            try {
-                // Clear canvas with night sky gradient
-                const gradient = ctx.createLinearGradient(0, 0, 0, height);
-                gradient.addColorStop(0, '#050510'); // Deep navy
-                gradient.addColorStop(1, '#111122'); // Pitch black
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, width, height);
-                
-                // Draw clouds
-                for (let i = 0; i < clouds.length; i++) {
-                    clouds[i].draw(ctx);
-                }
-                
-                // Draw searchlights
-                for (let i = 0; i < game.searchlights.length; i++) {
-                    game.searchlights[i].draw(ctx);
-                }
-                
-                // Draw ground
-                const groundGradient = ctx.createLinearGradient(0, height - 100, 0, height);
-                groundGradient.addColorStop(0, '#228B22');
-                groundGradient.addColorStop(0.5, '#32CD32');
-                groundGradient.addColorStop(1, '#66CDAA');
-                ctx.fillStyle = groundGradient;
-                ctx.fillRect(0, height - 100, width, 100);
-                
-                // Draw ground objects
-                for (let i = 0; i < groundObjects.length; i++) {
-                    groundObjects[i].draw(ctx);
-                }
-                
-                // Draw flak cannons
-                for (let i = 0; i < flakCannons.length; i++) {
-                    flakCannons[i].draw(ctx);
-                }
-                
-                // Draw bombs
-                for (let i = 0; i < game.bombs.length; i++) {
-                    game.bombs[i].draw(ctx);
-                }
-                
-                // Draw bomber
-                if (bomber) bomber.draw(ctx);
-                
-                // Draw flak bursts
-                for (let i = 0; i < game.flakBursts.length; i++) {
-                    game.flakBursts[i].draw(ctx);
-                }
-                
-                // Draw particles
-                for (let i = 0; i < game.particles.length; i++) {
-                    game.particles[i].draw(ctx);
-                }
-            } catch (error) {
-                console.error("Draw error:", error);
-            }
-        }
-        
-        function updateUI() {
-            document.getElementById('targetsValue').textContent = `${game.targetsDestroyed}/${game.totalTargets}`;
-            document.getElementById('hpValue').textContent = `${Math.ceil(game.hp)}%`;
-            document.getElementById('fuelValue').textContent = `${Math.ceil(game.fuel)}%`;
-            
-            const progressPercent = (game.targetsDestroyed / game.totalTargets) * 100;
-            document.getElementById('progressFill').style.width = `${progressPercent}%`;
-        }
-        
-        function loop() {
-            update();
-            draw();
-            requestAnimationFrame(loop);
-        }
-        
-        // Start button
-        document.getElementById('startButton').addEventListener('click', () => {
-            document.getElementById('startScreen').style.display = 'none';
-            
-            initGame();
-            game.running = true;
-            
-            // Update UI initially
-            updateUI();
-        });
-        
-        // Initialize for first draw (before start)
-        resize();
-        
-        // Start the loop
-        loop();
     </script>
 </body>
 </html>
